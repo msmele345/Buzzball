@@ -45,3 +45,7 @@ resilience4j:
 logging:
   level:
     com.buzzball: INFO
+
+app:
+  cors:
+    allowed-origins: http://localhost:5173
