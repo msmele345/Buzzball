@@ -1,22 +1,33 @@
 package com.buzzball.controller;
 
+import com.buzzball.model.MatchupProjection;
+import com.buzzball.service.prediction.MatchupAnalysisService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Map;
 
-/**
- * Matchup projection controller — full implementation in Phase 5.
- */
 @RestController
 @RequestMapping("/api/v1/matchups")
+@RequiredArgsConstructor
 public class MatchupController {
 
+    private final MatchupAnalysisService matchupAnalysisService;
+
     @GetMapping("/{playerId}/upcoming")
-    public ResponseEntity<List<Map<String, Object>>> getUpcomingMatchups(
+    public ResponseEntity<List<MatchupProjection>> getUpcomingMatchups(
             @PathVariable String playerId) {
-        // Phase 5: returns MatchupProjection results from Cosmos DB
-        return ResponseEntity.ok(List.of());
+        return ResponseEntity.ok(matchupAnalysisService.getUpcomingProjections(playerId));
+    }
+
+    @PostMapping("/{playerId}/project")
+    public ResponseEntity<MatchupProjection> projectMatchup(
+            @PathVariable String playerId,
+            @RequestParam String pitcherId,
+            @RequestParam String gameDate,
+            @RequestParam(defaultValue = "") String venue) {
+        return ResponseEntity.ok(
+                matchupAnalysisService.projectMatchup(playerId, pitcherId, gameDate, venue));
     }
 }
