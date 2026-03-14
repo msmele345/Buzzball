@@ -10,7 +10,7 @@ RUN mvn package -DskipTests -B
 FROM eclipse-temurin:21-jre-alpine AS runtime
 WORKDIR /app
 RUN addgroup -S buzzball && adduser -S buzzball -G buzzball
-COPY --from=builder /app/target/*.jar app.jar
+COPY --from=builder /app/target/buzzball-api-*.jar app.jar
 USER buzzball
 EXPOSE 8080
 ENTRYPOINT ["java", "-jar", "app.jar"]
