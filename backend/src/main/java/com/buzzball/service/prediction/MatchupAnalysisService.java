@@ -2,10 +2,8 @@ package com.buzzball.service.prediction;
 
 import com.buzzball.model.BattingStats;
 import com.buzzball.model.MatchupProjection;
-import com.buzzball.model.PitchingStats;
 import com.buzzball.repository.BattingStatsRepository;
 import com.buzzball.repository.MatchupProjectionRepository;
-import com.buzzball.repository.PitchingStatsRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -38,7 +36,6 @@ public class MatchupAnalysisService {
     private static final double LEAGUE_AVERAGE_WOBA = 0.317;
 
     private final BattingStatsRepository battingStatsRepository;
-    private final PitchingStatsRepository pitchingStatsRepository;
     private final MatchupProjectionRepository matchupProjectionRepository;
     private final ParkFactorService parkFactorService;
 
