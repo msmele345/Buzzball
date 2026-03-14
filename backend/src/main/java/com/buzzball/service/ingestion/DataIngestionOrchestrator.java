@@ -104,7 +104,7 @@ public class DataIngestionOrchestrator {
         log.info("FanGraphs data refresh complete");
     }
 
-    private void refreshStandings() {
+    public void refreshStandings() {
         List<Team> teams = mlbStatsApiClient.fetchStandings();
         teams.forEach(teamRepository::save);
         log.info("Upserted {} team standings", teams.size());

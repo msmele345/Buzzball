@@ -118,7 +118,7 @@ public class MlbStatsApiClient {
 
             players.add(Player.builder()
                     .playerId(String.valueOf(personInfo.get("id")))
-                    .fullName((String) personInfo.get("fullName"))
+                    .name((String) personInfo.get("fullName"))
                     .teamId(teamId)
                     .position(positionInfo != null ? (String) positionInfo.get("name") : "")
                     .positionAbbrev(positionInfo != null ? (String) positionInfo.get("abbreviation") : "")

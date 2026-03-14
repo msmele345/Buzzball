@@ -18,7 +18,7 @@ public class Player {
     private String playerId;
     @PartitionKey
     private String teamId;
-    private String fullName;
+    private String name;
     private String position;
     private String positionAbbrev;
     private boolean active;

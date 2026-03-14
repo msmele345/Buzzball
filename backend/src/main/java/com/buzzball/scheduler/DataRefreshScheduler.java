@@ -22,6 +22,13 @@ public class DataRefreshScheduler {
         orchestrator.refreshRostersAndStandings();
     }
 
+    /** Standings: every 2 hours */
+    @Scheduled(fixedDelay = 2 * 60 * 60 * 1000, initialDelay = 45_000)
+    public void refreshStandings() {
+        log.info("Scheduler: starting standings refresh");
+        orchestrator.refreshStandings();
+    }
+
     /** Statcast advanced metrics: daily at 6 AM ET */
     @Scheduled(cron = "0 0 6 * * *", zone = "America/New_York")
     public void refreshStatcast() {
