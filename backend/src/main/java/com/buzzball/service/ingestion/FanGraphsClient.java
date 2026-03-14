@@ -21,7 +21,7 @@ public class FanGraphsClient {
         this.restClient = builder.baseUrl(FANGRAPHS_BASE_URL).build();
     }
 
-    @CircuitBreaker(name = "fangraphs", fallbackMethod = "fetchBattingLeaderboardFallback")
+    @CircuitBreaker(name = "fangraphs-batting", fallbackMethod = "fetchBattingLeaderboardFallback")
     @SuppressWarnings("unchecked")
     public List<Map<String, Object>> fetchBattingLeaderboard(int season) {
         log.info("Fetching FanGraphs batting leaderboard for season {}", season);
@@ -41,7 +41,7 @@ public class FanGraphsClient {
         return Collections.emptyList();
     }
 
-    @CircuitBreaker(name = "fangraphs", fallbackMethod = "fetchPitchingLeaderboardFallback")
+    @CircuitBreaker(name = "fangraphs-pitching", fallbackMethod = "fetchPitchingLeaderboardFallback")
     @SuppressWarnings("unchecked")
     public List<Map<String, Object>> fetchPitchingLeaderboard(int season) {
         log.info("Fetching FanGraphs pitching leaderboard for season {}", season);

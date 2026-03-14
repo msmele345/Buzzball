@@ -2,11 +2,13 @@ package com.buzzball.service.ingestion;
 
 import com.buzzball.model.Player;
 import com.buzzball.model.Team;
+import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClient;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -24,6 +26,7 @@ public class MlbStatsApiClient {
                 .build();
     }
 
+    @CircuitBreaker(name = "mlbstatsapi", fallbackMethod = "fetchStandingsFallback")
     @SuppressWarnings("unchecked")
     public List<Team> fetchStandings() {
         log.info("Fetching MLB standings from Stats API");
@@ -41,6 +44,7 @@ public class MlbStatsApiClient {
         }
     }
 
+    @CircuitBreaker(name = "mlbstatsapi", fallbackMethod = "fetchRosterFallback")
     @SuppressWarnings("unchecked")
     public List<Player> fetchRosterForTeam(String teamId) {
         log.info("Fetching roster for team {}", teamId);
@@ -56,6 +60,18 @@ public class MlbStatsApiClient {
             log.error("Failed to fetch roster for team {}: {}", teamId, e.getMessage(), e);
             return List.of();
         }
+    }
+
+    @SuppressWarnings("unused")
+    private List<Team> fetchStandingsFallback(Throwable t) {
+        log.warn("MLB Stats API circuit breaker open for standings: {}", t.getMessage());
+        return Collections.emptyList();
+    }
+
+    @SuppressWarnings("unused")
+    private List<Player> fetchRosterFallback(String teamId, Throwable t) {
+        log.warn("MLB Stats API circuit breaker open for team {}: {}", teamId, t.getMessage());
+        return Collections.emptyList();
     }
 
     private int getCurrentSeason() {

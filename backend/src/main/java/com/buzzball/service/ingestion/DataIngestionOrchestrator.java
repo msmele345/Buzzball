@@ -32,11 +32,10 @@ public class DataIngestionOrchestrator {
 
     public void refreshRostersAndStandings() {
         log.info("Starting roster and standings refresh");
-        refreshStandings();
         for (String teamId : MLB_TEAM_IDS) {
             try {
                 List<Player> players = mlbStatsApiClient.fetchRosterForTeam(teamId);
-                players.forEach(player -> playerRepository.save(player));
+                playerRepository.saveAll(players);
                 log.info("Upserted {} players for team {}", players.size(), teamId);
             } catch (Exception e) {
                 log.error("Failed to refresh roster for team {}: {}", teamId, e.getMessage(), e);
@@ -122,6 +121,7 @@ public class DataIngestionOrchestrator {
         stats.setBarrelPct(parseDoubleSafe(row.getBarrelPct()));
         stats.setHardHitPct(parseDoubleSafe(row.getHardHitPct()));
         stats.setLaunchAngleAvg(parseDoubleSafe(row.getLaunchAngleAvg()));
+        stats.setSprintSpeedFt(parseDoubleSafe(row.getSprintSpeed()));
 
         battingStatsRepository.save(stats);
     }
@@ -176,6 +176,6 @@ public class DataIngestionOrchestrator {
         if (value == null || value.isBlank() || "null".equalsIgnoreCase(value) || "N/A".equalsIgnoreCase(value)) {
             return null;
         }
-        try { return Double.parseDouble(value.replace("%", "")); } catch (Exception e) { return null; }
+        try { return Double.parseDouble(value.trim().replace("%", "")); } catch (Exception e) { return null; }
     }
 }

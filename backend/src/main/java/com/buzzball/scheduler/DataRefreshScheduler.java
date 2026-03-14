@@ -33,7 +33,11 @@ public class DataRefreshScheduler {
     @Scheduled(cron = "0 0 6 * * *", zone = "America/New_York")
     public void refreshStatcast() {
         log.info("Scheduler: starting Statcast refresh");
-        orchestrator.refreshStatcastData(Year.now().getValue());
+        try {
+            orchestrator.refreshStatcastData(Year.now().getValue());
+        } catch (Exception e) {
+            log.error("Statcast refresh failed — possible schema change: {}", e.getMessage(), e);
+        }
     }
 
     /** FanGraphs WAR/FIP: daily at 7 AM ET */

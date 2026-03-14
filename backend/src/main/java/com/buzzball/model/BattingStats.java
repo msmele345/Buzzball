@@ -28,10 +28,10 @@ public class BattingStats {
     private int walks;
     private int strikeouts;
     private int stolenBases;
-    private double battingAverage;
-    private double onBasePercentage;
-    private double sluggingPercentage;
-    private double ops;
+    private Double battingAverage;
+    private Double onBasePercentage;
+    private Double sluggingPercentage;
+    private Double ops;
     // Statcast advanced
     private Double xba;         // Expected Batting Average
     private Double xslg;        // Expected Slugging

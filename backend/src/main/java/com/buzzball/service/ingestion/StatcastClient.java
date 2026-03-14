@@ -4,7 +4,6 @@ import com.buzzball.model.StatcastRow;
 import com.fasterxml.jackson.databind.MappingIterator;
 import com.fasterxml.jackson.dataformat.csv.CsvMapper;
 import com.fasterxml.jackson.dataformat.csv.CsvSchema;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClient;
@@ -13,21 +12,21 @@ import java.util.List;
 
 @Slf4j
 @Service
-@RequiredArgsConstructor
 public class StatcastClient {
 
     private static final String SAVANT_BASE_URL = "https://baseballsavant.mlb.com";
 
-    private final RestClient.Builder restClientBuilder;
+    private final RestClient restClient;
     private final CsvMapper csvMapper;
 
-    private RestClient buildClient() {
-        return restClientBuilder.baseUrl(SAVANT_BASE_URL).build();
+    public StatcastClient(RestClient.Builder restClientBuilder, CsvMapper csvMapper) {
+        this.restClient = restClientBuilder.baseUrl(SAVANT_BASE_URL).build();
+        this.csvMapper = csvMapper;
     }
 
     public List<StatcastRow> fetchBattingStatcast(int season) {
         log.info("Fetching Statcast batting data for season {}", season);
-        String csvData = buildClient().get()
+        String csvData = this.restClient.get()
                 .uri("/leaderboard/expected_statistics?type=batter&year={year}&position=&team=&min=q&csv=true", season)
                 .retrieve()
                 .body(String.class);
@@ -36,7 +35,7 @@ public class StatcastClient {
 
     public List<StatcastRow> fetchPitchingStatcast(int season) {
         log.info("Fetching Statcast pitching data for season {}", season);
-        String csvData = buildClient().get()
+        String csvData = this.restClient.get()
                 .uri("/leaderboard/expected_statistics?type=pitcher&year={year}&position=&team=&min=q&csv=true", season)
                 .retrieve()
                 .body(String.class);

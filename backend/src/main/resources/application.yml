@@ -27,10 +27,19 @@ springdoc:
 resilience4j:
   circuitbreaker:
     instances:
-      fangraphs:
+      mlbstatsapi:
         sliding-window-size: 10
         failure-rate-threshold: 50
-        wait-duration-in-open-state: 30s
+        wait-duration-in-open-state: 5m
+      fangraphs-batting:
+        sliding-window-size: 10
+        failure-rate-threshold: 50
+        wait-duration-in-open-state: 10m
+        permitted-number-of-calls-in-half-open-state: 3
+      fangraphs-pitching:
+        sliding-window-size: 10
+        failure-rate-threshold: 50
+        wait-duration-in-open-state: 10m
         permitted-number-of-calls-in-half-open-state: 3
 
 logging:
