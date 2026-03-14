@@ -1,0 +1,775 @@
+openapi: 3.0.3
+info:
+  title: BuzzBall MLB Stats API
+  description: >
+    REST API for the BuzzBall MLB analytics platform. Provides endpoints for
+    player statistics, team standings, dashboard aggregations, matchup projections,
+    and server-sent-event (SSE) live updates.
+  version: 0.1.0
+  contact:
+    name: BuzzBall
+servers:
+  - url: http://localhost:8080
+    description: Local development
+
+tags:
+  - name: Dashboard
+    description: Aggregated dashboard data — trending players, league leaders, standings
+  - name: Players
+    description: Player profiles and detailed statistics
+  - name: Teams
+    description: Team summaries, rosters, and comparisons
+  - name: Matchups
+    description: Upcoming matchup projections and on-demand analysis
+  - name: Live Updates
+    description: Server-Sent Events for real-time data refresh signals
+
+paths:
+  # ──────────────────── Dashboard ────────────────────
+  /api/v1/dashboard:
+    get:
+      operationId: getDashboard
+      summary: Get full dashboard payload
+      description: Returns trending hitters/pitchers, AL/NL standings, and league leaders in a single call.
+      tags: [Dashboard]
+      responses:
+        "200":
+          description: Dashboard data
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DashboardDto"
+
+  /api/v1/dashboard/trending:
+    get:
+      operationId: getTrending
+      summary: Get trending players
+      description: Returns trending hitters or pitchers based on 7-day WAR and wOBA deltas.
+      tags: [Dashboard]
+      parameters:
+        - name: category
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: [hitting, pitching]
+            default: hitting
+      responses:
+        "200":
+          description: List of trending players
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/TrendingPlayerDto"
+
+  /api/v1/dashboard/league-leaders:
+    get:
+      operationId: getLeagueLeaders
+      summary: Get league leaders
+      description: Returns top-ranked players across key statistical categories (wOBA, WAR, FIP, HR, etc.).
+      tags: [Dashboard]
+      responses:
+        "200":
+          description: List of league leaders
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/LeagueLeaderDto"
+
+  /api/v1/dashboard/standings:
+    get:
+      operationId: getStandings
+      summary: Get team standings
+      description: Returns the current dashboard (which includes AL and NL standings).
+      tags: [Dashboard]
+      responses:
+        "200":
+          description: Dashboard data with standings
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DashboardDto"
+
+  # ──────────────────── Players ────────────────────
+  /api/v1/players:
+    get:
+      operationId: getAllPlayers
+      summary: List all active players
+      tags: [Players]
+      responses:
+        "200":
+          description: List of player summaries
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/PlayerSummaryDto"
+
+  /api/v1/players/{id}:
+    get:
+      operationId: getPlayer
+      summary: Get player detail
+      description: Returns full biographical and positional data for a single player.
+      tags: [Players]
+      parameters:
+        - $ref: "#/components/parameters/PlayerId"
+      responses:
+        "200":
+          description: Player detail
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PlayerDetailDto"
+        "404":
+          $ref: "#/components/responses/PlayerNotFound"
+
+  /api/v1/players/{id}/batting:
+    get:
+      operationId: getBattingStats
+      summary: Get batting stats for a player
+      description: >
+        Returns season-level batting statistics including traditional, Statcast,
+        and FanGraphs advanced metrics.
+      tags: [Players]
+      parameters:
+        - $ref: "#/components/parameters/PlayerId"
+      responses:
+        "200":
+          description: Batting statistics by season
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/BattingStatsDto"
+        "404":
+          $ref: "#/components/responses/PlayerNotFound"
+
+  /api/v1/players/{id}/pitching:
+    get:
+      operationId: getPitchingStats
+      summary: Get pitching stats for a player
+      description: >
+        Returns season-level pitching statistics including traditional, Statcast,
+        and FanGraphs advanced metrics.
+      tags: [Players]
+      parameters:
+        - $ref: "#/components/parameters/PlayerId"
+      responses:
+        "200":
+          description: Pitching statistics by season
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/PitchingStatsDto"
+        "404":
+          $ref: "#/components/responses/PlayerNotFound"
+
+  /api/v1/players/{id}/fielding:
+    get:
+      operationId: getFieldingStats
+      summary: Get fielding stats for a player
+      description: >
+        Returns season-level fielding statistics including OAA and DRS.
+      tags: [Players]
+      parameters:
+        - $ref: "#/components/parameters/PlayerId"
+      responses:
+        "200":
+          description: Fielding statistics by season
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/FieldingStatsDto"
+        "404":
+          $ref: "#/components/responses/PlayerNotFound"
+
+  # ──────────────────── Teams ────────────────────
+  /api/v1/teams:
+    get:
+      operationId: getAllTeams
+      summary: List all teams
+      tags: [Teams]
+      responses:
+        "200":
+          description: List of team summaries
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/TeamSummaryDto"
+
+  /api/v1/teams/{id}:
+    get:
+      operationId: getTeam
+      summary: Get a single team
+      tags: [Teams]
+      parameters:
+        - $ref: "#/components/parameters/TeamId"
+      responses:
+        "200":
+          description: Team summary
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TeamSummaryDto"
+
+  /api/v1/teams/{id}/roster:
+    get:
+      operationId: getRoster
+      summary: Get team roster
+      description: Returns all active players on a team.
+      tags: [Teams]
+      parameters:
+        - $ref: "#/components/parameters/TeamId"
+      responses:
+        "200":
+          description: List of player summaries on the roster
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/PlayerSummaryDto"
+
+  /api/v1/teams/compare:
+    get:
+      operationId: compareTeams
+      summary: Compare multiple teams
+      description: Side-by-side comparison of two or more teams across key metrics.
+      tags: [Teams]
+      parameters:
+        - name: teamIds
+          in: query
+          required: true
+          description: Comma-separated list of team IDs to compare
+          schema:
+            type: array
+            items:
+              type: string
+          style: form
+          explode: true
+      responses:
+        "200":
+          description: Team comparison result
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TeamComparisonDto"
+
+  # ──────────────────── Matchups ────────────────────
+  /api/v1/matchups/{playerId}/upcoming:
+    get:
+      operationId: getUpcomingMatchups
+      summary: Get upcoming matchup projections
+      description: Returns pre-computed matchup projections for a batter's upcoming schedule.
+      tags: [Matchups]
+      parameters:
+        - name: playerId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: List of matchup projections
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/MatchupProjection"
+
+  /api/v1/matchups/{playerId}/project:
+    post:
+      operationId: projectMatchup
+      summary: Project a custom matchup
+      description: >
+        On-demand projection for a specific batter vs. pitcher matchup at a given
+        venue and date. Uses a weighted model (60 % current season, 30 % career splits,
+        10 % park factor).
+      tags: [Matchups]
+      parameters:
+        - name: playerId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: pitcherId
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: gameDate
+          in: query
+          required: true
+          description: "ISO date string (e.g. 2026-06-15)"
+          schema:
+            type: string
+        - name: venue
+          in: query
+          required: false
+          schema:
+            type: string
+            default: ""
+      responses:
+        "200":
+          description: Projected matchup result
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MatchupProjection"
+
+  # ──────────────────── Live Updates ────────────────────
+  /api/v1/live/updates:
+    get:
+      operationId: getLiveUpdates
+      summary: Subscribe to live update stream (SSE)
+      description: >
+        Opens a Server-Sent Events connection. The server pushes `connected`
+        on connect and `data-refresh` events every 4 hours (or on manual trigger)
+        so clients can invalidate caches and refetch data.
+      tags: [Live Updates]
+      responses:
+        "200":
+          description: SSE event stream
+          content:
+            text/event-stream:
+              schema:
+                type: string
+                description: >
+                  Newline-delimited SSE frames. Event names: `connected`, `data-refresh`.
+
+# ═══════════════════════════════════════════════════════
+#  Components
+# ═══════════════════════════════════════════════════════
+components:
+  parameters:
+    PlayerId:
+      name: id
+      in: path
+      required: true
+      description: Unique player identifier (MLB player ID)
+      schema:
+        type: string
+    TeamId:
+      name: id
+      in: path
+      required: true
+      description: Unique team identifier
+      schema:
+        type: string
+
+  responses:
+    PlayerNotFound:
+      description: Player not found
+      content:
+        application/problem+json:
+          schema:
+            $ref: "#/components/schemas/ProblemDetail"
+
+  schemas:
+    # ── Dashboard ──
+    DashboardDto:
+      type: object
+      properties:
+        trendingHitters:
+          type: array
+          items:
+            $ref: "#/components/schemas/TrendingPlayerDto"
+        trendingPitchers:
+          type: array
+          items:
+            $ref: "#/components/schemas/TrendingPlayerDto"
+        alStandings:
+          type: array
+          items:
+            $ref: "#/components/schemas/TeamSummaryDto"
+        nlStandings:
+          type: array
+          items:
+            $ref: "#/components/schemas/TeamSummaryDto"
+        leagueLeaders:
+          type: array
+          items:
+            $ref: "#/components/schemas/LeagueLeaderDto"
+
+    TrendingPlayerDto:
+      type: object
+      properties:
+        playerId:
+          type: string
+        name:
+          type: string
+        position:
+          type: string
+        teamId:
+          type: string
+        currentWar:
+          type: number
+          format: double
+        warDelta7d:
+          type: number
+          format: double
+        currentWoba:
+          type: number
+          format: double
+        wobaDelta7d:
+          type: number
+          format: double
+        currentFip:
+          type: number
+          format: double
+        fipDelta7d:
+          type: number
+          format: double
+        trendCategory:
+          type: string
+          description: "hitting, pitching, or fielding"
+
+    LeagueLeaderDto:
+      type: object
+      properties:
+        category:
+          type: string
+          description: "Stat category (e.g. wOBA, WAR, FIP, HR)"
+        playerId:
+          type: string
+        playerName:
+          type: string
+        teamId:
+          type: string
+        value:
+          type: number
+          format: double
+        rank:
+          type: integer
+
+    # ── Players ──
+    PlayerSummaryDto:
+      type: object
+      properties:
+        playerId:
+          type: string
+        name:
+          type: string
+        position:
+          type: string
+        positionAbbrev:
+          type: string
+        teamId:
+          type: string
+        active:
+          type: boolean
+        jerseyNumber:
+          type: string
+
+    PlayerDetailDto:
+      type: object
+      properties:
+        playerId:
+          type: string
+        name:
+          type: string
+        position:
+          type: string
+        positionAbbrev:
+          type: string
+        teamId:
+          type: string
+        active:
+          type: boolean
+        jerseyNumber:
+          type: string
+        birthDate:
+          type: string
+        batsThrows:
+          type: string
+
+    BattingStatsDto:
+      type: object
+      properties:
+        playerId:
+          type: string
+        season:
+          type: integer
+        gamesPlayed:
+          type: integer
+        atBats:
+          type: integer
+        hits:
+          type: integer
+        homeRuns:
+          type: integer
+        rbi:
+          type: integer
+        walks:
+          type: integer
+        strikeouts:
+          type: integer
+        stolenBases:
+          type: integer
+        battingAverage:
+          type: number
+          format: double
+        onBasePercentage:
+          type: number
+          format: double
+        sluggingPercentage:
+          type: number
+          format: double
+        ops:
+          type: number
+          format: double
+        xba:
+          type: number
+          format: double
+          description: Expected batting average (Statcast)
+        xslg:
+          type: number
+          format: double
+          description: Expected slugging (Statcast)
+        xwoba:
+          type: number
+          format: double
+          description: Expected wOBA (Statcast)
+        exitVelocityAvg:
+          type: number
+          format: double
+          description: Average exit velocity (Statcast)
+        barrelPct:
+          type: number
+          format: double
+          description: Barrel percentage (Statcast)
+        hardHitPct:
+          type: number
+          format: double
+          description: Hard-hit percentage (Statcast)
+        launchAngleAvg:
+          type: number
+          format: double
+          description: Average launch angle (Statcast)
+        woba:
+          type: number
+          format: double
+          description: Weighted on-base average (FanGraphs)
+        wrcPlus:
+          type: number
+          format: double
+          description: Weighted runs created plus (FanGraphs)
+        fWar:
+          type: number
+          format: double
+          description: FanGraphs WAR
+        babip:
+          type: number
+          format: double
+          description: Batting average on balls in play
+
+    PitchingStatsDto:
+      type: object
+      properties:
+        playerId:
+          type: string
+        season:
+          type: integer
+        gamesPlayed:
+          type: integer
+        gamesStarted:
+          type: integer
+        inningsPitched:
+          type: number
+          format: double
+        era:
+          type: number
+          format: double
+        wins:
+          type: integer
+        losses:
+          type: integer
+        saves:
+          type: integer
+        strikeouts:
+          type: integer
+        walks:
+          type: integer
+        whip:
+          type: number
+          format: double
+        spinRateFastball:
+          type: number
+          format: double
+          description: Fastball spin rate (Statcast)
+        xera:
+          type: number
+          format: double
+          description: Expected ERA (Statcast)
+        whiffPct:
+          type: number
+          format: double
+          description: Whiff percentage (Statcast)
+        chasePct:
+          type: number
+          format: double
+          description: Chase percentage (Statcast)
+        fip:
+          type: number
+          format: double
+          description: Fielding independent pitching (FanGraphs)
+        xfip:
+          type: number
+          format: double
+          description: Expected FIP (FanGraphs)
+        fWar:
+          type: number
+          format: double
+          description: FanGraphs WAR
+        babip:
+          type: number
+          format: double
+
+    FieldingStatsDto:
+      type: object
+      properties:
+        playerId:
+          type: string
+        season:
+          type: integer
+        position:
+          type: string
+        games:
+          type: integer
+        putouts:
+          type: integer
+        assists:
+          type: integer
+        errors:
+          type: integer
+        fieldingPct:
+          type: number
+          format: double
+        oaa:
+          type: integer
+          nullable: true
+          description: Outs above average (Statcast)
+        drs:
+          type: integer
+          nullable: true
+          description: Defensive runs saved
+
+    # ── Teams ──
+    TeamSummaryDto:
+      type: object
+      properties:
+        teamId:
+          type: string
+        name:
+          type: string
+        abbreviation:
+          type: string
+        division:
+          type: string
+        league:
+          type: string
+        wins:
+          type: integer
+        losses:
+          type: integer
+        winPct:
+          type: number
+          format: double
+        gamesBack:
+          type: number
+          format: double
+        runDifferential:
+          type: integer
+
+    TeamComparisonDto:
+      type: object
+      properties:
+        teams:
+          type: array
+          items:
+            $ref: "#/components/schemas/TeamSummaryDto"
+        metrics:
+          type: array
+          items:
+            $ref: "#/components/schemas/ComparisonMetric"
+
+    ComparisonMetric:
+      type: object
+      properties:
+        metricName:
+          type: string
+        label:
+          type: string
+        values:
+          type: array
+          description: One value per team, same order as the teams list
+          items:
+            type: number
+            format: double
+
+    # ── Matchups ──
+    MatchupProjection:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Composite key (playerId-pitcherId-gameDate)
+        playerId:
+          type: string
+        opposingPitcherId:
+          type: string
+        gameDate:
+          type: string
+        venue:
+          type: string
+        projectedWoba:
+          type: number
+          format: double
+        currentSeasonWeight:
+          type: number
+          format: double
+          description: Weight of current-season data (default 0.60)
+        careerSplitWeight:
+          type: number
+          format: double
+          description: Weight of career split data (default 0.30)
+        parkFactorWeight:
+          type: number
+          format: double
+          description: Weight of park factor (default 0.10)
+        handedness:
+          type: string
+          description: "vs L or vs R"
+        parkFactor:
+          type: number
+          format: double
+
+    # ── Error ──
+    ProblemDetail:
+      type: object
+      description: RFC 7807 Problem Detail
+      properties:
+        type:
+          type: string
+        title:
+          type: string
+        status:
+          type: integer
+        detail:
+          type: string
+        instance:
+          type: string
+

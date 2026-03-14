@@ -2,7 +2,6 @@ package com.buzzball.model;
 
 import com.azure.spring.data.cosmos.core.mapping.Container;
 import com.azure.spring.data.cosmos.core.mapping.PartitionKey;
-import com.azure.spring.data.cosmos.core.mapping.TimeToLive;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -13,8 +12,7 @@ import org.springframework.data.annotation.Id;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Container(containerName = "matchup-projections")
-@TimeToLive(defaultTimeToLive = 86400) // 24 hours in seconds
+@Container(containerName = "matchup-projections", timeToLive = 86400) // 24 hours in seconds
 public class MatchupProjection {
     @Id
     private String id; // playerId-pitcherId-gameDate
