@@ -15,11 +15,28 @@ dist-ssr
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
-.idea
+.idea/
+*.iml
 .DS_Store
+Thumbs.db
 *.suo
 *.ntvs*
 *.njsproj
 *.sln
 *.sw?
 .worktrees/
+
+# Java / Maven
+target/
+*.class
+
+# Environment
+.env
+.env.*
+!.env.example
+
+# Azure
+.azure/
+
+# Frontend build / deps
+frontend/node_modules/
