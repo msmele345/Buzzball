@@ -3,6 +3,7 @@ package com.buzzball.integration;
 import com.azure.spring.cloud.autoconfigure.implementation.cosmos.AzureCosmosAutoConfiguration;
 import com.azure.spring.cloud.autoconfigure.implementation.data.cosmos.CosmosDataAutoConfiguration;
 import com.azure.spring.cloud.autoconfigure.implementation.data.cosmos.CosmosRepositoriesAutoConfiguration;
+import com.buzzball.model.Player;
 import com.buzzball.model.Team;
 import com.buzzball.repository.*;
 import com.fasterxml.jackson.dataformat.csv.CsvMapper;
@@ -124,6 +125,53 @@ class TeamIntegrationTest {
                 .andExpect(status().isInternalServerError())
                 .andExpect(jsonPath("$.title").value("Internal Server Error"))
                 .andExpect(jsonPath("$.detail").value("Team not found: unknown"));
+    }
+
+    @Test
+    void getRoster_fullFlow_200() throws Exception {
+        Player judge = Player.builder()
+                .playerId("p1").name("Aaron Judge").position("Outfield")
+                .positionAbbrev("OF").teamId("nyy").active(true).jerseyNumber("99")
+                .build();
+        Player soto = Player.builder()
+                .playerId("p2").name("Juan Soto").position("Outfield")
+                .positionAbbrev("OF").teamId("nyy").active(true).jerseyNumber("22")
+                .build();
+        when(playerRepository.findByTeamId("nyy")).thenReturn(List.of(judge, soto));
+
+        mockMvc.perform(get("/api/v1/teams/nyy/roster")
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$.length()").value(2))
+                .andExpect(jsonPath("$[0].playerId").value("p1"))
+                .andExpect(jsonPath("$[0].name").value("Aaron Judge"))
+                .andExpect(jsonPath("$[1].playerId").value("p2"))
+                .andExpect(jsonPath("$[1].name").value("Juan Soto"));
+    }
+
+    @Test
+    void compareTeams_fullFlow_200() throws Exception {
+        Team yankees = buildTeam("nyy", "Yankees", "NYY", "AL East", "AL", 50, 30);
+        Team redSox = buildTeam("bos", "Red Sox", "BOS", "AL East", "AL", 45, 35);
+        when(teamRepository.findById("nyy")).thenReturn(Optional.of(yankees));
+        when(teamRepository.findById("bos")).thenReturn(Optional.of(redSox));
+
+        mockMvc.perform(get("/api/v1/teams/compare")
+                        .param("teamIds", "nyy", "bos")
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$.teams").isArray())
+                .andExpect(jsonPath("$.teams.length()").value(2))
+                .andExpect(jsonPath("$.metrics").isArray())
+                .andExpect(jsonPath("$.metrics.length()").value(4))
+                .andExpect(jsonPath("$.metrics[0].metricName").value("wins"))
+                .andExpect(jsonPath("$.metrics[0].values[0]").value(50.0))
+                .andExpect(jsonPath("$.metrics[0].values[1]").value(45.0))
+                .andExpect(jsonPath("$.metrics[1].metricName").value("losses"))
+                .andExpect(jsonPath("$.metrics[2].metricName").value("winPct"))
+                .andExpect(jsonPath("$.metrics[3].metricName").value("runDifferential"));
     }
 
     private Team buildTeam(String id, String name, String abbrev, String division,
