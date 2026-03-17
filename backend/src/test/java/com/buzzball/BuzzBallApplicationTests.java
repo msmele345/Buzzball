@@ -1,4 +1,6 @@
 package com.buzzball;
 
-public class BuzzBallApplicationTests {
-}
+import org.springframework.boot.test.context.SpringBootTest;
+
+@SpringBootTest
+public class BuzzBallApplicationTests { }

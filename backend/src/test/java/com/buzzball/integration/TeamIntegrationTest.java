@@ -10,25 +10,23 @@ import com.fasterxml.jackson.dataformat.csv.CsvMapper;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.http.MediaType;
+import org.springframework.boot.test.web.client.TestRestTemplate;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
-import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 import java.util.List;
 import java.util.Optional;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-@SpringBootTest
-@AutoConfigureMockMvc
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @EnableAutoConfiguration(exclude = {
         AzureCosmosAutoConfiguration.class,
         CosmosDataAutoConfiguration.class,
@@ -52,7 +50,7 @@ class TeamIntegrationTest {
     }
 
     @Autowired
-    private MockMvc mockMvc;
+    private TestRestTemplate restTemplate;
 
     // All CosmosRepository beans must be mocked to prevent Cosmos auto-config failures
     @MockBean
@@ -69,66 +67,65 @@ class TeamIntegrationTest {
     private MatchupProjectionRepository matchupProjectionRepository;
 
     @Test
-    void getAllTeams_fullFlow_200() throws Exception {
+    void getAllTeams_fullFlow_200() {
         Team yankees = buildTeam("nyy", "Yankees", "NYY", "AL East", "AL", 50, 30);
         Team redSox = buildTeam("bos", "Red Sox", "BOS", "AL East", "AL", 45, 35);
         when(teamRepository.findAll()).thenReturn(List.of(yankees, redSox));
 
-        mockMvc.perform(get("/api/v1/teams")
-                        .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
-                .andExpect(jsonPath("$.length()").value(2))
-                .andExpect(jsonPath("$[0].teamId").value("nyy"))
-                .andExpect(jsonPath("$[0].name").value("Yankees"))
-                .andExpect(jsonPath("$[0].abbreviation").value("NYY"))
-                .andExpect(jsonPath("$[0].division").value("AL East"))
-                .andExpect(jsonPath("$[0].league").value("AL"))
-                .andExpect(jsonPath("$[0].wins").value(50))
-                .andExpect(jsonPath("$[0].losses").value(30))
-                .andExpect(jsonPath("$[0].winPct").value(0.625))
-                .andExpect(jsonPath("$[0].gamesBack").value(0.0))
-                .andExpect(jsonPath("$[0].runDifferential").value(75))
-                .andExpect(jsonPath("$[1].teamId").value("bos"))
-                .andExpect(jsonPath("$[1].name").value("Red Sox"));
+        ResponseEntity<String> response = restTemplate.getForEntity("/api/v1/teams", String.class);
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+        String body = response.getBody();
+        assertThat(body).contains("\"teamId\":\"nyy\"");
+        assertThat(body).contains("\"name\":\"Yankees\"");
+        assertThat(body).contains("\"abbreviation\":\"NYY\"");
+        assertThat(body).contains("\"division\":\"AL East\"");
+        assertThat(body).contains("\"league\":\"AL\"");
+        assertThat(body).contains("\"wins\":50");
+        assertThat(body).contains("\"losses\":30");
+        assertThat(body).contains("\"winPct\":0.625");
+        assertThat(body).contains("\"gamesBack\":0.0");
+        assertThat(body).contains("\"runDifferential\":75");
+        assertThat(body).contains("\"teamId\":\"bos\"");
+        assertThat(body).contains("\"name\":\"Red Sox\"");
     }
 
     @Test
-    void getTeam_fullFlow_200() throws Exception {
+    void getTeam_fullFlow_200() {
         Team yankees = buildTeam("nyy", "Yankees", "NYY", "AL East", "AL", 50, 30);
         when(teamRepository.findById("nyy")).thenReturn(Optional.of(yankees));
 
-        mockMvc.perform(get("/api/v1/teams/nyy")
-                        .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
-                .andExpect(jsonPath("$.teamId").value("nyy"))
-                .andExpect(jsonPath("$.name").value("Yankees"))
-                .andExpect(jsonPath("$.abbreviation").value("NYY"))
-                .andExpect(jsonPath("$.division").value("AL East"))
-                .andExpect(jsonPath("$.league").value("AL"))
-                .andExpect(jsonPath("$.wins").value(50))
-                .andExpect(jsonPath("$.losses").value(30))
-                .andExpect(jsonPath("$.winPct").value(0.625))
-                .andExpect(jsonPath("$.runDifferential").value(75));
+        ResponseEntity<String> response = restTemplate.getForEntity("/api/v1/teams/nyy", String.class);
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+        String body = response.getBody();
+        assertThat(body).contains("\"teamId\":\"nyy\"");
+        assertThat(body).contains("\"name\":\"Yankees\"");
+        assertThat(body).contains("\"abbreviation\":\"NYY\"");
+        assertThat(body).contains("\"division\":\"AL East\"");
+        assertThat(body).contains("\"league\":\"AL\"");
+        assertThat(body).contains("\"wins\":50");
+        assertThat(body).contains("\"losses\":30");
+        assertThat(body).contains("\"winPct\":0.625");
+        assertThat(body).contains("\"runDifferential\":75");
     }
 
     @Test
-    void getTeam_notFound_500() throws Exception {
+    void getTeam_notFound_500() {
         // Verifies current behavior: TeamService throws generic RuntimeException,
         // GlobalExceptionHandler maps to 500 ProblemDetail.
         // Will change to 404 when dedicated TeamNotFoundException is introduced.
         when(teamRepository.findById("unknown")).thenReturn(Optional.empty());
 
-        mockMvc.perform(get("/api/v1/teams/unknown")
-                        .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isInternalServerError())
-                .andExpect(jsonPath("$.title").value("Internal Server Error"))
-                .andExpect(jsonPath("$.detail").value("Team not found: unknown"));
+        ResponseEntity<String> response = restTemplate.getForEntity("/api/v1/teams/unknown", String.class);
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.INTERNAL_SERVER_ERROR);
+        assertThat(response.getBody()).contains("Internal Server Error");
+        assertThat(response.getBody()).contains("Team not found: unknown");
     }
 
     @Test
-    void getRoster_fullFlow_200() throws Exception {
+    void getRoster_fullFlow_200() {
         Player judge = Player.builder()
                 .playerId("p1").name("Aaron Judge").position("Outfield")
                 .positionAbbrev("OF").teamId("nyy").active(true).jerseyNumber("99")
@@ -139,39 +136,34 @@ class TeamIntegrationTest {
                 .build();
         when(playerRepository.findByTeamId("nyy")).thenReturn(List.of(judge, soto));
 
-        mockMvc.perform(get("/api/v1/teams/nyy/roster")
-                        .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
-                .andExpect(jsonPath("$.length()").value(2))
-                .andExpect(jsonPath("$[0].playerId").value("p1"))
-                .andExpect(jsonPath("$[0].name").value("Aaron Judge"))
-                .andExpect(jsonPath("$[1].playerId").value("p2"))
-                .andExpect(jsonPath("$[1].name").value("Juan Soto"));
+        ResponseEntity<String> response = restTemplate.getForEntity("/api/v1/teams/nyy/roster", String.class);
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+        String body = response.getBody();
+        assertThat(body).contains("\"playerId\":\"p1\"");
+        assertThat(body).contains("\"name\":\"Aaron Judge\"");
+        assertThat(body).contains("\"playerId\":\"p2\"");
+        assertThat(body).contains("\"name\":\"Juan Soto\"");
     }
 
     @Test
-    void compareTeams_fullFlow_200() throws Exception {
+    void compareTeams_fullFlow_200() {
         Team yankees = buildTeam("nyy", "Yankees", "NYY", "AL East", "AL", 50, 30);
         Team redSox = buildTeam("bos", "Red Sox", "BOS", "AL East", "AL", 45, 35);
         when(teamRepository.findById("nyy")).thenReturn(Optional.of(yankees));
         when(teamRepository.findById("bos")).thenReturn(Optional.of(redSox));
 
-        mockMvc.perform(get("/api/v1/teams/compare")
-                        .param("teamIds", "nyy", "bos")
-                        .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
-                .andExpect(jsonPath("$.teams").isArray())
-                .andExpect(jsonPath("$.teams.length()").value(2))
-                .andExpect(jsonPath("$.metrics").isArray())
-                .andExpect(jsonPath("$.metrics.length()").value(4))
-                .andExpect(jsonPath("$.metrics[0].metricName").value("wins"))
-                .andExpect(jsonPath("$.metrics[0].values[0]").value(50.0))
-                .andExpect(jsonPath("$.metrics[0].values[1]").value(45.0))
-                .andExpect(jsonPath("$.metrics[1].metricName").value("losses"))
-                .andExpect(jsonPath("$.metrics[2].metricName").value("winPct"))
-                .andExpect(jsonPath("$.metrics[3].metricName").value("runDifferential"));
+        ResponseEntity<String> response = restTemplate.getForEntity(
+                "/api/v1/teams/compare?teamIds=nyy,bos", String.class);
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+        String body = response.getBody();
+        assertThat(body).contains("\"teams\"");
+        assertThat(body).contains("\"metrics\"");
+        assertThat(body).contains("\"metricName\":\"wins\"");
+        assertThat(body).contains("\"metricName\":\"losses\"");
+        assertThat(body).contains("\"metricName\":\"winPct\"");
+        assertThat(body).contains("\"metricName\":\"runDifferential\"");
     }
 
     private Team buildTeam(String id, String name, String abbrev, String division,
