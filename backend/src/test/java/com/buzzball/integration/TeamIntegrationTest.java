@@ -176,6 +176,8 @@ class TeamIntegrationTest {
 
     private Team buildTeam(String id, String name, String abbrev, String division,
                            String league, int wins, int losses) {
+        int runsScored = 400;
+        int runsAllowed = 325;
         return Team.builder()
                 .teamId(id)
                 .name(name)
@@ -187,9 +189,9 @@ class TeamIntegrationTest {
                 .losses(losses)
                 .winPct((double) wins / (wins + losses))
                 .gamesBack(0.0)
-                .runsScored(400)
-                .runsAllowed(325)
-                .runDifferential(75)
+                .runsScored(runsScored)
+                .runsAllowed(runsAllowed)
+                .runDifferential(runsScored - runsAllowed)
                 .build();
     }
 }
