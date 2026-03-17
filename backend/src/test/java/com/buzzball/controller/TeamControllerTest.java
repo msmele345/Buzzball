@@ -1,5 +1,7 @@
 package com.buzzball.controller;
 
+import com.buzzball.dto.PlayerSummaryDto;
+import com.buzzball.dto.TeamComparisonDto;
 import com.buzzball.dto.TeamSummaryDto;
 import com.buzzball.service.PlayerService;
 import com.buzzball.service.TeamService;
@@ -76,6 +78,62 @@ class TeamControllerTest {
 
         mockMvc.perform(get("/api/v1/teams/unknown").contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isInternalServerError());
+    }
+
+    @Test
+    void getRoster_returnsList_200() throws Exception {
+        List<PlayerSummaryDto> players = List.of(
+                buildPlayerDto("p1", "Aaron Judge"),
+                buildPlayerDto("p2", "Juan Soto")
+        );
+        when(playerService.getPlayersByTeam("nyy")).thenReturn(players);
+
+        mockMvc.perform(get("/api/v1/teams/nyy/roster").contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(content().json(objectMapper.writeValueAsString(players)));
+    }
+
+    @Test
+    void getRoster_emptyRoster_200() throws Exception {
+        when(playerService.getPlayersByTeam("nyy")).thenReturn(Collections.emptyList());
+
+        mockMvc.perform(get("/api/v1/teams/nyy/roster").contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(content().json("[]"));
+    }
+
+    @Test
+    void compareTeams_returnsComparison_200() throws Exception {
+        TeamSummaryDto nyy = buildTeamDto("NYY", "Yankees");
+        TeamSummaryDto bos = buildTeamDto("BOS", "Red Sox");
+        TeamComparisonDto comparison = TeamComparisonDto.builder()
+                .teams(List.of(nyy, bos))
+                .metrics(List.of(
+                        TeamComparisonDto.ComparisonMetric.builder()
+                                .metricName("wins").label("Wins").values(List.of(50.0, 50.0)).build(),
+                        TeamComparisonDto.ComparisonMetric.builder()
+                                .metricName("losses").label("Losses").values(List.of(30.0, 30.0)).build()
+                ))
+                .build();
+        when(teamService.compareTeams(List.of("nyy", "bos"))).thenReturn(comparison);
+
+        mockMvc.perform(get("/api/v1/teams/compare")
+                        .param("teamIds", "nyy", "bos")
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(content().json(objectMapper.writeValueAsString(comparison)));
+    }
+
+    private PlayerSummaryDto buildPlayerDto(String id, String name) {
+        return PlayerSummaryDto.builder()
+                .playerId(id)
+                .name(name)
+                .position("Outfield")
+                .positionAbbrev("OF")
+                .teamId("nyy")
+                .active(true)
+                .jerseyNumber("99")
+                .build();
     }
 
     private TeamSummaryDto buildTeamDto(String abbreviation, String name) {
