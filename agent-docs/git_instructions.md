@@ -1,4 +1,5 @@
 # Git Strategy and Instructions
+- Create feature branches off of develop for each new feature or task. Name branches using the format `feature/short-description` (e.g., `feature/spotify-integration`).
 - Git Strategy is Git Flow with the following branches:
   - `main` - production ready code
   - `develop` - latest development code, merged from feature branches

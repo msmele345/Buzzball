@@ -42,3 +42,5 @@ target/
 
 # Frontend build / deps
 frontend/node_modules/
+
+backend/src/main/resources/application-secret.yml
