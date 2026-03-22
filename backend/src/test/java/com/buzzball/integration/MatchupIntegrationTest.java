@@ -1,34 +1,50 @@
 package com.buzzball.integration;
 
-import com.azure.spring.cloud.autoconfigure.implementation.cosmos.AzureCosmosAutoConfiguration;
-import com.azure.spring.cloud.autoconfigure.implementation.data.cosmos.CosmosDataAutoConfiguration;
-import com.azure.spring.cloud.autoconfigure.implementation.data.cosmos.CosmosRepositoriesAutoConfiguration;
-import com.buzzball.repository.MatchupProjectionRepository;
-import org.junit.jupiter.api.Disabled;
+import com.buzzball.model.MatchupProjection;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.boot.test.web.client.TestRestTemplate;
+import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatusCode;
+import org.springframework.http.ResponseEntity;
 
-@Disabled("TODO fix application context errors — WebTestClient requires spring-boot-starter-webflux")
-@SpringBootTest()
-@EnableAutoConfiguration(exclude = {
-        AzureCosmosAutoConfiguration.class,
-        CosmosDataAutoConfiguration.class,
-        CosmosRepositoriesAutoConfiguration.class
-})
-public class MatchupIntegrationTest {
+import java.util.List;
 
-    @MockBean
-    private MatchupProjectionRepository matchupProjectionRepository;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.when;
 
-    @Autowired
-    private TestRestTemplate restTemplate;
+
+public class MatchupIntegrationTest extends BaseIntegrationTest {
 
     @Test
     void getMatchups_200() {
+        when(matchupProjectionRepository.findByPlayerId(anyString()))
+                .thenReturn(stubMatchups());
 
+        ResponseEntity<List<MatchupProjection>> actual = restTemplate.exchange("/api/v1/matchups/1234/upcoming",
+                HttpMethod.GET,
+                null,
+                new ParameterizedTypeReference<List<MatchupProjection>>() {
+                }
+        );
+
+        assertThat(actual.getStatusCode()).isEqualTo(HttpStatusCode.valueOf(200));
+    }
+
+    private static List<MatchupProjection> stubMatchups() {
+        MatchupProjection e1 = new MatchupProjection();
+        MatchupProjection e2 = new MatchupProjection();
+        MatchupProjection e3 = new MatchupProjection();
+        e1.setGameDate("2026-03-30");
+        e1.setId("1");
+        e1.setPlayerId("1234");
+        e2.setPlayerId("1234");
+        e2.setId("2");
+        e3.setId("3");
+        e3.setPlayerId("1234");
+        e2.setGameDate("2026-04-01");
+        e3.setGameDate("2026-03-31");
+
+        return List.of(e1, e2, e3);
     }
 }

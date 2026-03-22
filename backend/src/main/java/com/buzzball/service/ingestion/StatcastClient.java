@@ -17,11 +17,10 @@ public class StatcastClient {
     private static final String SAVANT_BASE_URL = "https://baseballsavant.mlb.com";
 
     private final RestClient restClient;
-    private final CsvMapper csvMapper;
+    private final CsvMapper csvMapper = new CsvMapper();
 
-    public StatcastClient(RestClient.Builder restClientBuilder, CsvMapper csvMapper) {
+    public StatcastClient(RestClient.Builder restClientBuilder) {
         this.restClient = restClientBuilder.baseUrl(SAVANT_BASE_URL).build();
-        this.csvMapper = csvMapper;
     }
 
     public List<StatcastRow> fetchBattingStatcast(int season) {
