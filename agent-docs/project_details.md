@@ -70,7 +70,7 @@ flowchart TD
     subgraph HOST["Azure Hosting"]
         H1[Static Web Apps\nFrontend CDN + PR previews]
         H2[Container Apps\nBackend scale-to-zero]
-        H3[Existing Cosmos Db. ]
+        H3[Existing Cosmos Db. Creds to be provided by the user]
         H4[Key Vault + Managed Identity\nNo credentials in code]
     end
 

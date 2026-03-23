@@ -6,8 +6,16 @@ spring:
       cosmos:
         endpoint: ${COSMOS_ENDPOINT}
         key: ${COSMOS_KEY}
-        database: buzzball
+        database: mmdev2932
         populate-query-metrics: false
+      compatibility-verifier:
+        enabled: false
+      keyvault:
+        secret:
+          property-sources[0]:
+            # name: key-vault-property-source-1
+            endpoint: https://kvdevapps1.vault.azure.net/
+          property-source-enabled: true
 
 management:
   endpoints:
@@ -48,4 +56,4 @@ logging:
 
 app:
   cors:
-    allowed-origins: http://localhost:5173
+    allowed-origins: ${APP_CORS_ALLOWED_ORIGINS:http://localhost:5173}

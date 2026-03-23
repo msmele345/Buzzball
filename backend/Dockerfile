@@ -13,4 +13,4 @@ RUN addgroup -S buzzball && adduser -S buzzball -G buzzball
 COPY --from=builder /app/target/buzzball-api-*.jar app.jar
 USER buzzball
 EXPOSE 8080
-ENTRYPOINT ["java", "-jar", "app.jar"]
+ENTRYPOINT ["java", "-Xmx512m", "-jar", "app.jar"]

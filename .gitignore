@@ -28,6 +28,7 @@ Thumbs.db
 *.sw?
 .worktrees/
 
+
 # Java / Maven
 target/
 *.class
