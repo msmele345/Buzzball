@@ -8,6 +8,7 @@ import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 
 import java.util.List;
+import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -29,6 +30,25 @@ public class MatchupIntegrationTest extends BaseIntegrationTest {
         );
 
         assertThat(actual.getStatusCode()).isEqualTo(HttpStatusCode.valueOf(200));
+    }
+
+
+    @Test
+    void addProjection_200() {
+        MatchupProjection expectedMatchup = stubMatchups().getFirst();
+
+        when(matchupProjectionRepository.findById(anyString()))
+                .thenReturn(Optional.of(expectedMatchup));
+
+        ResponseEntity<MatchupProjection> actual = restTemplate.exchange(
+                "/api/v1/matchups/1234/project?pitcherId=56&gameDate=03302026",
+                HttpMethod.POST,
+                null,
+                MatchupProjection.class
+        );
+
+        assertThat(actual.getStatusCode()).isEqualTo(HttpStatusCode.valueOf(200));
+        assertThat(actual.getBody()).isEqualTo(expectedMatchup);
     }
 
     private static List<MatchupProjection> stubMatchups() {
