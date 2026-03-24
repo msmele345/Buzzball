@@ -1,0 +1,59 @@
+spring:
+  application:
+    name: buzzball-api
+  cloud:
+    azure:
+      cosmos:
+        endpoint: ${mmdevdburl}
+        key: ${mmdevdbkey}
+        database: mmdev2932
+        populate-query-metrics: false
+      compatibility-verifier:
+        enabled: false
+      keyvault:
+        secret:
+          property-sources[0]:
+            # name: key-vault-property-source-1
+            endpoint: https://kvdevapps1.vault.azure.net/
+          property-source-enabled: true
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+  endpoint:
+    health:
+      show-details: when_authorized
+
+springdoc:
+  api-docs:
+    path: /api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+
+resilience4j:
+  circuitbreaker:
+    instances:
+      mlbstatsapi:
+        sliding-window-size: 10
+        failure-rate-threshold: 50
+        wait-duration-in-open-state: 5m
+      fangraphs-batting:
+        sliding-window-size: 10
+        failure-rate-threshold: 50
+        wait-duration-in-open-state: 10m
+        permitted-number-of-calls-in-half-open-state: 3
+      fangraphs-pitching:
+        sliding-window-size: 10
+        failure-rate-threshold: 50
+        wait-duration-in-open-state: 10m
+        permitted-number-of-calls-in-half-open-state: 3
+
+logging:
+  level:
+    com.buzzball: INFO
+
+app:
+  cors:
+    allowed-origins: ${APP_CORS_ALLOWED_ORIGINS:http://localhost:5173}
