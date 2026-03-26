@@ -1,0 +1,13 @@
+spring:
+  cloud:
+    azure:
+      cosmos:
+        endpoint: ${COSMOS_ENDPOINT}
+        key: ${COSMOS_KEY}
+        database: mmdev2932
+
+logging:
+  level:
+    com.buzzball: INFO
+    com.azure.cosmos: WARN
+    org.springframework: WARN

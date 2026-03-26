@@ -1,24 +1,10 @@
 package com.buzzball.integration;
 
-import com.azure.spring.cloud.autoconfigure.implementation.cosmos.AzureCosmosAutoConfiguration;
-import com.azure.spring.cloud.autoconfigure.implementation.data.cosmos.CosmosDataAutoConfiguration;
-import com.azure.spring.cloud.autoconfigure.implementation.data.cosmos.CosmosRepositoriesAutoConfiguration;
 import com.buzzball.model.Player;
 import com.buzzball.model.Team;
-import com.buzzball.repository.*;
-import com.fasterxml.jackson.dataformat.csv.CsvMapper;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.context.TestConfiguration;
-import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.http.converter.HttpMessageConverter;
-import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
-import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 import java.util.List;
 import java.util.Optional;
@@ -26,45 +12,7 @@ import java.util.Optional;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
 
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-@EnableAutoConfiguration(exclude = {
-        AzureCosmosAutoConfiguration.class,
-        CosmosDataAutoConfiguration.class,
-        CosmosRepositoriesAutoConfiguration.class
-})
-class TeamIntegrationTest {
-
-    @TestConfiguration
-    static class FixCsvConverterConfig implements WebMvcConfigurer {
-        // Remove any HttpMessageConverter backed by CsvMapper, which Spring Boot
-        // auto-registers because CsvMapper extends ObjectMapper.
-        @Override
-        public void extendMessageConverters(List<HttpMessageConverter<?>> converters) {
-            converters.removeIf(c -> {
-                if (c instanceof MappingJackson2HttpMessageConverter jacksonConverter) {
-                    return jacksonConverter.getObjectMapper() instanceof CsvMapper;
-                }
-                return false;
-            });
-        }
-    }
-
-    @Autowired
-    private TestRestTemplate restTemplate;
-
-    // All CosmosRepository beans must be mocked to prevent Cosmos auto-config failures
-    @MockBean
-    private TeamRepository teamRepository;
-    @MockBean
-    private PlayerRepository playerRepository;
-    @MockBean
-    private BattingStatsRepository battingStatsRepository;
-    @MockBean
-    private PitchingStatsRepository pitchingStatsRepository;
-    @MockBean
-    private FieldingStatsRepository fieldingStatsRepository;
-    @MockBean
-    private MatchupProjectionRepository matchupProjectionRepository;
+class TeamIntegrationTest extends BaseIntegrationTest {
 
     @Test
     void getAllTeams_fullFlow_200() {
