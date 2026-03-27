@@ -1,6 +1,6 @@
 import { useParams } from 'react-router-dom';
 import { useEffect } from 'react';
-import { usePlayer, useBattingStats, usePitchingStats, useFieldingStats } from '../hooks/usePlayers';
+import { usePlayer, useBattingStats, usePitchingStats } from '../hooks/usePlayers';
 import { usePlayerStore } from '../store/playerStore';
 import { PlayerHeader } from '../components/player/PlayerHeader';
 import { StatsSummaryCards } from '../components/player/StatsSummaryCards';
@@ -16,14 +16,12 @@ export function PlayerProfilePage() {
   const { data: player, isLoading, error } = usePlayer(id ?? '');
   const { data: battingStats } = useBattingStats(id ?? '');
   const { data: pitchingStats } = usePitchingStats(id ?? '');
-  const { data: fieldingStats } = useFieldingStats(id ?? '');
-
   useEffect(() => {
     if (id) addRecentlyViewed(id);
   }, [id, addRecentlyViewed]);
 
   if (isLoading) return (
-    <div className="max-w-5xl mx-auto px-4 py-8 space-y-4">
+    <div className="max-w-5xl mx-auto px-4 py-8 space-y-4" role="status" aria-label="Loading player profile">
       <div className="animate-pulse h-24 bg-bg-surface rounded-2xl" />
       <div className="grid grid-cols-3 gap-3">
         <div className="animate-pulse h-20 bg-bg-surface rounded-xl" />
@@ -38,9 +36,6 @@ export function PlayerProfilePage() {
   const currentBatting = battingStats?.[battingStats.length - 1] ?? null;
   const currentPitching = pitchingStats?.[pitchingStats.length - 1] ?? null;
   const isBatter = currentBatting != null;
-
-  // fieldingStats is fetched but will be used in Phase 5
-  void fieldingStats;
 
   return (
     <div className="max-w-5xl mx-auto px-4 py-8 space-y-8">

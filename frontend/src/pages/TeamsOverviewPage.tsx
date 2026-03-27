@@ -5,7 +5,7 @@ export function TeamsOverviewPage() {
   const { data: teams, isLoading, error } = useTeams();
 
   if (isLoading) return (
-    <div className="max-w-7xl mx-auto px-4 py-8 space-y-4">
+    <div className="max-w-7xl mx-auto px-4 py-8 space-y-4" role="status" aria-label="Loading teams">
       {[...Array(6)].map((_, i) => (
         <div key={i} className="animate-pulse h-16 bg-bg-surface rounded-xl" />
       ))}

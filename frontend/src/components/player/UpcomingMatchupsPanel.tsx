@@ -1,21 +1,4 @@
-import { useQuery } from '@tanstack/react-query';
-import apiClient from '../../api/client';
-
-interface MatchupProjection {
-  id: string;
-  playerId: string;
-  opposingPitcherId: string;
-  gameDate: string;
-  venue: string;
-  projectedWoba: number;
-  handedness: string;
-  parkFactor: number;
-}
-
-function fetchUpcomingMatchups(playerId: string): Promise<MatchupProjection[]> {
-  return apiClient.get<MatchupProjection[]>(`/matchups/${playerId}/upcoming`)
-    .then(r => r.data);
-}
+import { useUpcomingMatchups } from '../../hooks/usePlayers';
 
 function wobaColor(woba: number): string {
   if (woba >= 0.370) return 'text-neon-green';
@@ -31,55 +14,24 @@ function wobaLabel(woba: number): string {
 }
 
 export function UpcomingMatchupsPanel({ playerId }: { playerId: string }) {
-  const { data: matchups, isLoading, error } = useQuery({
-    queryKey: ['matchups', playerId],
-    queryFn: () => fetchUpcomingMatchups(playerId),
-    enabled: Boolean(playerId),
-    staleTime: 60 * 60 * 1000, // 1 hour — projections have 24hr TTL on backend
-  });
+  const { data: matchups, isLoading, error } = useUpcomingMatchups(playerId);
+
+  let content: React.ReactNode;
 
   if (isLoading) {
-    return (
-      <div className="bg-bg-surface border border-border rounded-xl p-6">
-        <h3 className="text-xs font-semibold text-text-muted uppercase tracking-[0.15em] mb-3">
-          Upcoming Matchups
-        </h3>
-        <div className="space-y-3">
-          {[...Array(3)].map((_, i) => (
-            <div key={i} className="animate-pulse h-12 bg-bg-surface-alt rounded" />
-          ))}
-        </div>
+    content = (
+      <div className="space-y-3" role="status" aria-label="Loading matchups">
+        {[...Array(3)].map((_, i) => (
+          <div key={i} className="animate-pulse h-12 bg-bg-surface-alt rounded" />
+        ))}
       </div>
     );
-  }
-
-  if (error) {
-    return (
-      <div className="bg-bg-surface border border-border rounded-xl p-6">
-        <h3 className="text-xs font-semibold text-text-muted uppercase tracking-[0.15em] mb-3">
-          Upcoming Matchups
-        </h3>
-        <div className="text-text-muted text-sm">Projections unavailable</div>
-      </div>
-    );
-  }
-
-  if (!matchups?.length) {
-    return (
-      <div className="bg-bg-surface border border-border rounded-xl p-6">
-        <h3 className="text-xs font-semibold text-text-muted uppercase tracking-[0.15em] mb-3">
-          Upcoming Matchups
-        </h3>
-        <div className="text-text-muted text-sm">No upcoming matchup projections</div>
-      </div>
-    );
-  }
-
-  return (
-    <div className="bg-bg-surface border border-border rounded-xl p-6">
-      <h3 className="text-xs font-semibold text-text-muted uppercase tracking-[0.15em] mb-4">
-        Upcoming Matchups
-      </h3>
+  } else if (error) {
+    content = <div className="text-text-muted text-sm">Projections unavailable</div>;
+  } else if (!matchups?.length) {
+    content = <div className="text-text-muted text-sm">No upcoming matchup projections</div>;
+  } else {
+    content = (
       <div className="space-y-3">
         {matchups.map((matchup) => (
           <div
@@ -111,6 +63,15 @@ export function UpcomingMatchupsPanel({ playerId }: { playerId: string }) {
           </div>
         ))}
       </div>
+    );
+  }
+
+  return (
+    <div className="bg-bg-surface border border-border rounded-xl p-6">
+      <h3 className="text-xs font-semibold text-text-muted uppercase tracking-[0.15em] mb-3">
+        Upcoming Matchups
+      </h3>
+      {content}
     </div>
   );
 }

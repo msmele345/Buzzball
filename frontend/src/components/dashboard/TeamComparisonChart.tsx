@@ -36,6 +36,7 @@ export function TeamComparisonChart() {
         <h2 className="text-xl font-bold text-white border-l-2 border-neon-green pl-3">Team Comparison</h2>
         <button
           onClick={clearComparison}
+          aria-label="Clear team comparison"
           className="text-xs text-text-secondary hover:text-neon-green transition-colors duration-200"
         >
           Clear

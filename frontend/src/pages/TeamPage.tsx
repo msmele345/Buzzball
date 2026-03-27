@@ -1,6 +1,6 @@
-import { useParams } from 'react-router-dom';
+import { useParams, Link } from 'react-router-dom';
 import { useTeam, useTeamRoster } from '../hooks/useTeams';
-import { Link } from 'react-router-dom';
+import type { RosterPlayerDto } from '../types';
 
 export function TeamPage() {
   const { id } = useParams<{ id: string }>();
@@ -8,7 +8,7 @@ export function TeamPage() {
   const { data: roster } = useTeamRoster(id ?? '');
 
   if (isLoading) return (
-    <div className="max-w-5xl mx-auto px-4 py-8 space-y-4">
+    <div className="max-w-5xl mx-auto px-4 py-8 space-y-4" role="status" aria-label="Loading team">
       <div className="animate-pulse h-32 bg-bg-surface rounded-2xl" />
       <div className="animate-pulse h-64 bg-bg-surface rounded-xl" />
     </div>
@@ -43,7 +43,7 @@ export function TeamPage() {
         <div>
           <h2 className="text-xl font-bold text-white mb-4 border-l-2 border-neon-green pl-3">Roster</h2>
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
-            {roster.map((player: { playerId: string; name: string; position: string; jerseyNumber: string }) => (
+            {roster.map((player: RosterPlayerDto) => (
               <Link
                 key={player.playerId}
                 to={`/players/${player.playerId}`}
