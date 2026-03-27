@@ -32,7 +32,7 @@ public class MlbStatsApiClient {
         log.info("Fetching MLB standings from Stats API");
         try {
             Map<String, Object> response = restClient.get()
-                    .uri("/standings?leagueId=103,104&season={season}&standingsTypes=regularSeason",
+                    .uri("/standings?leagueId=103,104&season={season}&standingsTypes=regularSeason&hydrate=team",
                             getCurrentSeason())
                     .retrieve()
                     .body(Map.class);
@@ -87,25 +87,31 @@ public class MlbStatsApiClient {
         if (records == null) return teams;
 
         for (Map<String, Object> record : records) {
-            String division = extractDivisionName(record);
             List<Map<String, Object>> teamRecords = (List<Map<String, Object>>) record.get("teamRecords");
             if (teamRecords == null) continue;
 
             for (Map<String, Object> teamRecord : teamRecords) {
-                teams.add(buildTeamFromRecord(teamRecord, division));
+                teams.add(buildTeamFromRecord(teamRecord));
             }
         }
         return teams;
     }
 
     @SuppressWarnings("unchecked")
-    private Team buildTeamFromRecord(Map<String, Object> teamRecord, String division) {
+    private Team buildTeamFromRecord(Map<String, Object> teamRecord) {
         Map<String, Object> teamInfo = (Map<String, Object>) teamRecord.get("team");
+        Map<String, Object> divisionInfo = (Map<String, Object>) teamInfo.get("division");
+        Map<String, Object> leagueInfo = (Map<String, Object>) teamInfo.get("league");
+
+        String division = divisionInfo != null ? (String) divisionInfo.get("name") : "Unknown";
+        String league = extractLeagueAbbreviation(leagueInfo);
+
         return Team.builder()
                 .teamId(String.valueOf(teamInfo.get("id")))
                 .name((String) teamInfo.get("name"))
                 .abbreviation((String) teamInfo.getOrDefault("abbreviation", ""))
                 .division(division)
+                .league(league)
                 .wins(parseIntSafe(teamRecord.get("wins")))
                 .losses(parseIntSafe(teamRecord.get("losses")))
                 .winPct(parseDoubleSafe(teamRecord.get("winningPercentage")))
@@ -113,10 +119,15 @@ public class MlbStatsApiClient {
                 .build();
     }
 
-    @SuppressWarnings("unchecked")
-    private String extractDivisionName(Map<String, Object> record) {
-        Map<String, Object> division = (Map<String, Object>) record.get("division");
-        return division != null ? (String) division.get("name") : "Unknown";
+    private String extractLeagueAbbreviation(Map<String, Object> leagueInfo) {
+        if (leagueInfo == null) return "Unknown";
+        Object id = leagueInfo.get("id");
+        if (id != null) {
+            int leagueId = parseIntSafe(id);
+            if (leagueId == 103) return "AL";
+            if (leagueId == 104) return "NL";
+        }
+        return "Unknown";
     }
 
     @SuppressWarnings("unchecked")
