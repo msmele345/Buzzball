@@ -1,4 +1,5 @@
 import { LineChart } from '../charts/LineChart';
+import { CHART_COLORS } from '../charts/chartTheme';
 import type { BattingStatsDto, PitchingStatsDto } from '../../types';
 
 interface SeasonProgressionChartProps {
@@ -14,15 +15,15 @@ export function SeasonProgressionChart({ battingStats, pitchingStats }: SeasonPr
 
     return (
       <div>
-        <h3 className="text-sm font-semibold text-gray-400 uppercase tracking-wide mb-3">
+        <h3 className="text-xs font-semibold text-text-muted uppercase tracking-[0.15em] mb-3">
           Season Progression (wOBA / OPS)
         </h3>
         <LineChart
           data={data}
           xDataKey="season"
           series={[
-            { dataKey: 'woba', label: 'wOBA', color: '#3b82f6' },
-            { dataKey: 'ops', label: 'OPS', color: '#22c55e' },
+            { dataKey: 'woba', label: 'wOBA', color: CHART_COLORS.electricBlue },
+            { dataKey: 'ops', label: 'OPS', color: CHART_COLORS.neonGreen },
           ]}
         />
       </div>
@@ -36,20 +37,20 @@ export function SeasonProgressionChart({ battingStats, pitchingStats }: SeasonPr
 
     return (
       <div>
-        <h3 className="text-sm font-semibold text-gray-400 uppercase tracking-wide mb-3">
+        <h3 className="text-xs font-semibold text-text-muted uppercase tracking-[0.15em] mb-3">
           Season Progression (FIP / ERA)
         </h3>
         <LineChart
           data={data}
           xDataKey="season"
           series={[
-            { dataKey: 'fip', label: 'FIP', color: '#f59e0b' },
-            { dataKey: 'era', label: 'ERA', color: '#ef4444' },
+            { dataKey: 'fip', label: 'FIP', color: CHART_COLORS.gold },
+            { dataKey: 'era', label: 'ERA', color: CHART_COLORS.hotRed },
           ]}
         />
       </div>
     );
   }
 
-  return <div className="text-gray-500 text-sm">No season data available</div>;
+  return <div className="text-text-muted text-sm">No season data available</div>;
 }

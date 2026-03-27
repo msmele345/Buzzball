@@ -22,8 +22,17 @@ export function PlayerProfilePage() {
     if (id) addRecentlyViewed(id);
   }, [id, addRecentlyViewed]);
 
-  if (isLoading) return <div className="text-gray-400 p-8">Loading player...</div>;
-  if (error) return <div className="text-red-400 p-8">Player not found</div>;
+  if (isLoading) return (
+    <div className="max-w-5xl mx-auto px-4 py-8 space-y-4">
+      <div className="animate-pulse h-24 bg-bg-surface rounded-2xl" />
+      <div className="grid grid-cols-3 gap-3">
+        <div className="animate-pulse h-20 bg-bg-surface rounded-xl" />
+        <div className="animate-pulse h-20 bg-bg-surface rounded-xl" />
+        <div className="animate-pulse h-20 bg-bg-surface rounded-xl" />
+      </div>
+    </div>
+  );
+  if (error) return <div className="text-hot-red p-8">Player not found</div>;
   if (!player) return null;
 
   const currentBatting = battingStats?.[battingStats.length - 1] ?? null;

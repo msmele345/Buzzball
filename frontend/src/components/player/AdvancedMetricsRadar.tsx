@@ -1,4 +1,5 @@
 import { RadarChart } from '../charts/RadarChart';
+import { CHART_COLORS } from '../charts/chartTheme';
 import type { BattingStatsDto, PitchingStatsDto } from '../../types';
 
 interface AdvancedMetricsRadarProps {
@@ -17,10 +18,10 @@ export function AdvancedMetricsRadar({ batting, pitching }: AdvancedMetricsRadar
     ];
     return (
       <div>
-        <h3 className="text-sm font-semibold text-gray-400 uppercase tracking-wide mb-3">
+        <h3 className="text-xs font-semibold text-text-muted uppercase tracking-[0.15em] mb-3">
           Statcast Profile
         </h3>
-        <RadarChart metrics={metrics} color="#3b82f6" />
+        <RadarChart metrics={metrics} color={CHART_COLORS.neonGreen} />
       </div>
     );
   }
@@ -35,10 +36,10 @@ export function AdvancedMetricsRadar({ batting, pitching }: AdvancedMetricsRadar
     ];
     return (
       <div>
-        <h3 className="text-sm font-semibold text-gray-400 uppercase tracking-wide mb-3">
+        <h3 className="text-xs font-semibold text-text-muted uppercase tracking-[0.15em] mb-3">
           Statcast Profile
         </h3>
-        <RadarChart metrics={metrics} color="#f59e0b" />
+        <RadarChart metrics={metrics} color={CHART_COLORS.gold} />
       </div>
     );
   }

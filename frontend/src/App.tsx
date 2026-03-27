@@ -15,7 +15,7 @@ const queryClient = new QueryClient({
 function AppShell() {
   useLiveUpdates();
   return (
-    <div className="min-h-screen bg-gray-900 text-white">
+    <div className="min-h-screen bg-bg-primary text-white font-sans">
       <RouterProvider router={router} />
     </div>
   );

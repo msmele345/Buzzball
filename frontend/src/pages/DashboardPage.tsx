@@ -5,10 +5,10 @@ import { TeamComparisonChart } from '../components/dashboard/TeamComparisonChart
 
 export function DashboardPage() {
   return (
-    <div className="max-w-7xl mx-auto px-4 py-8 space-y-10">
+    <div className="max-w-7xl mx-auto px-4 py-10 space-y-12">
       <div>
-        <h1 className="text-3xl font-bold text-white mb-2">BuzzBall Dashboard</h1>
-        <p className="text-gray-400">MLB Advanced Metrics & Analytics</p>
+        <h1 className="text-5xl font-black tracking-tight text-neon-green mb-1">BUZZBALL</h1>
+        <p className="text-xs uppercase tracking-[0.2em] text-text-muted">MLB Advanced Metrics &amp; Analytics</p>
       </div>
       <TrendingPlayersSection />
       <LeagueLeadersCard />
