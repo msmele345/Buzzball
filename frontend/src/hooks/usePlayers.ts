@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { fetchPlayer, fetchPlayers, fetchBattingStats, fetchPitchingStats, fetchFieldingStats } from '../api/players';
+import { fetchPlayer, fetchPlayers, fetchBattingStats, fetchPitchingStats, fetchFieldingStats, fetchUpcomingMatchups } from '../api/players';
 
 export const usePlayers = () =>
   useQuery({
@@ -38,4 +38,12 @@ export const useFieldingStats = (playerId: string) =>
     queryFn: () => fetchFieldingStats(playerId),
     enabled: Boolean(playerId),
     staleTime: 5 * 60 * 1000,
+  });
+
+export const useUpcomingMatchups = (playerId: string) =>
+  useQuery({
+    queryKey: ['matchups', playerId],
+    queryFn: () => fetchUpcomingMatchups(playerId),
+    enabled: Boolean(playerId),
+    staleTime: 60 * 60 * 1000,
   });

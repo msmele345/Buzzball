@@ -2,8 +2,9 @@ import { useUiStore } from '../../store/uiStore';
 import { useTeamComparison } from '../../hooks/useTeams';
 import { RadarChart } from '../charts/RadarChart';
 import type { RadarMetric } from '../charts/RadarChart';
+import { CHART_COLORS } from '../charts/chartTheme';
 
-const TEAM_COLORS = ['#3b82f6', '#22c55e', '#f59e0b'];
+const TEAM_COLORS = [CHART_COLORS.neonGreen, CHART_COLORS.gold, CHART_COLORS.electricBlue];
 
 export function TeamComparisonChart() {
   const teamComparisonList = useUiStore((s) => s.teamComparisonList);
@@ -12,13 +13,15 @@ export function TeamComparisonChart() {
 
   if (teamComparisonList.length < 2) {
     return (
-      <div className="bg-gray-800 rounded-lg p-6 text-center text-gray-400 text-sm">
-        Select 2–3 teams from standings to compare
+      <div className="bg-bg-surface border border-border rounded-xl p-6 text-center text-text-secondary text-sm">
+        Select 2-3 teams from standings to compare
       </div>
     );
   }
 
-  if (isLoading) return <div className="text-gray-400 text-sm">Loading comparison...</div>;
+  if (isLoading) return (
+    <div className="animate-pulse h-64 bg-bg-surface rounded-xl" />
+  );
   if (!comparison) return null;
 
   const metricsForFirstTeam: RadarMetric[] = comparison.metrics.map((metric) => ({
@@ -30,10 +33,11 @@ export function TeamComparisonChart() {
   return (
     <section>
       <div className="flex items-center justify-between mb-4">
-        <h2 className="text-xl font-bold text-white">Team Comparison</h2>
+        <h2 className="text-xl font-bold text-white border-l-2 border-neon-green pl-3">Team Comparison</h2>
         <button
           onClick={clearComparison}
-          className="text-xs text-gray-400 hover:text-white transition-colors"
+          aria-label="Clear team comparison"
+          className="text-xs text-text-secondary hover:text-neon-green transition-colors duration-200"
         >
           Clear
         </button>
@@ -42,7 +46,7 @@ export function TeamComparisonChart() {
         {comparison.teams.map((team, i) => (
           <span
             key={team.teamId}
-            className="px-2 py-1 rounded text-xs font-medium text-white"
+            className="px-2 py-1 rounded-lg text-xs font-mono font-medium text-black"
             style={{ backgroundColor: TEAM_COLORS[i] }}
           >
             {team.abbreviation}

@@ -1,5 +1,5 @@
 import apiClient from './client';
-import type { PlayerSummaryDto, PlayerDetailDto, BattingStatsDto, PitchingStatsDto, FieldingStatsDto } from '../types';
+import type { PlayerSummaryDto, PlayerDetailDto, BattingStatsDto, PitchingStatsDto, FieldingStatsDto, MatchupProjectionDto } from '../types';
 
 export const fetchPlayers = async (): Promise<PlayerSummaryDto[]> => {
   const { data } = await apiClient.get<PlayerSummaryDto[]>('/players');
@@ -23,5 +23,10 @@ export const fetchPitchingStats = async (playerId: string): Promise<PitchingStat
 
 export const fetchFieldingStats = async (playerId: string): Promise<FieldingStatsDto[]> => {
   const { data } = await apiClient.get<FieldingStatsDto[]>(`/players/${playerId}/fielding`);
+  return data;
+};
+
+export const fetchUpcomingMatchups = async (playerId: string): Promise<MatchupProjectionDto[]> => {
+  const { data } = await apiClient.get<MatchupProjectionDto[]>(`/matchups/${playerId}/upcoming`);
   return data;
 };

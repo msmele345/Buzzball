@@ -135,3 +135,21 @@ export interface DashboardDto {
   nlStandings: TeamSummaryDto[];
   leagueLeaders: LeagueLeaderDto[];
 }
+
+export interface RosterPlayerDto {
+  playerId: string;
+  name: string;
+  position: string;
+  jerseyNumber: string;
+}
+
+export interface MatchupProjectionDto {
+  id: string;
+  playerId: string;
+  opposingPitcherId: string;
+  gameDate: string;
+  venue: string;
+  projectedWoba: number;
+  handedness: string;
+  parkFactor: number;
+}
