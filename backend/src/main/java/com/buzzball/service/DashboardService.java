@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.OptionalInt;
 
 @Service
 @RequiredArgsConstructor
@@ -23,8 +24,6 @@ public class DashboardService {
     private final PlayerRepository playerRepository;
     private final PlayerMapper playerMapper;
     private final TeamMapper teamMapper;
-
-    private static final int CURRENT_SEASON = java.time.Year.now().getValue();
 
     @Cacheable("dashboard-trending")
     public DashboardDto getDashboard() {
@@ -41,8 +40,16 @@ public class DashboardService {
         List<BattingStats> allStats = new ArrayList<>();
         battingStatsRepository.findAll().forEach(allStats::add);
 
+        OptionalInt latestBattingSeason = allStats.stream()
+                .mapToInt(BattingStats::getSeason)
+                .max();
+        if (latestBattingSeason.isEmpty()) {
+            return List.of();
+        }
+        int currentBattingSeason = latestBattingSeason.getAsInt();
+
         return allStats.stream()
-                .filter(s -> s.getSeason() == CURRENT_SEASON && s.getFWar() != null)
+                .filter(s -> s.getSeason() == currentBattingSeason && s.getFWar() != null)
                 .sorted(Comparator.comparingDouble(BattingStats::getFWar).reversed())
                 .limit(5)
                 .map(stats -> {
@@ -68,8 +75,16 @@ public class DashboardService {
         List<PitchingStats> allStats = new ArrayList<>();
         pitchingStatsRepository.findAll().forEach(allStats::add);
 
+        OptionalInt latestPitchingSeason = allStats.stream()
+                .mapToInt(PitchingStats::getSeason)
+                .max();
+        if (latestPitchingSeason.isEmpty()) {
+            return List.of();
+        }
+        int currentPitchingSeason = latestPitchingSeason.getAsInt();
+
         return allStats.stream()
-                .filter(s -> s.getSeason() == CURRENT_SEASON && s.getFWar() != null)
+                .filter(s -> s.getSeason() == currentPitchingSeason && s.getFWar() != null)
                 .sorted(Comparator.comparingDouble(PitchingStats::getFWar).reversed())
                 .limit(5)
                 .map(stats -> {
@@ -106,8 +121,13 @@ public class DashboardService {
         List<BattingStats> battingStats = new ArrayList<>();
         battingStatsRepository.findAll().forEach(battingStats::add);
 
+        OptionalInt latestBattingSeason = battingStats.stream()
+                .mapToInt(BattingStats::getSeason)
+                .max();
+        int currentBattingSeason = latestBattingSeason.orElse(0);
+
         battingStats.stream()
-                .filter(s -> s.getSeason() == CURRENT_SEASON && s.getWoba() != null)
+                .filter(s -> s.getSeason() == currentBattingSeason && s.getWoba() != null)
                 .sorted(Comparator.comparingDouble(BattingStats::getWoba).reversed())
                 .limit(3)
                 .forEach(stats -> {
@@ -124,7 +144,7 @@ public class DashboardService {
 
         // Top WAR (batting)
         battingStats.stream()
-                .filter(s -> s.getSeason() == CURRENT_SEASON && s.getFWar() != null)
+                .filter(s -> s.getSeason() == currentBattingSeason && s.getFWar() != null)
                 .sorted(Comparator.comparingDouble(BattingStats::getFWar).reversed())
                 .limit(3)
                 .forEach(stats -> {
@@ -143,8 +163,13 @@ public class DashboardService {
         List<PitchingStats> pitchingStats = new ArrayList<>();
         pitchingStatsRepository.findAll().forEach(pitchingStats::add);
 
+        int currentPitchingSeason = pitchingStats.stream()
+                .mapToInt(PitchingStats::getSeason)
+                .max()
+                .orElse(0);
+
         pitchingStats.stream()
-                .filter(s -> s.getSeason() == CURRENT_SEASON && s.getFip() != null)
+                .filter(s -> s.getSeason() == currentPitchingSeason && s.getFip() != null)
                 .sorted(Comparator.comparingDouble(PitchingStats::getFip))
                 .limit(3)
                 .forEach(stats -> {

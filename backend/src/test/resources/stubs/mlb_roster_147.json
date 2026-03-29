@@ -1,0 +1,44 @@
+{
+  "copyright": "Copyright 2025 MLB Advanced Media, L.P.",
+  "roster": [
+    {
+      "person": {
+        "id": 592450,
+        "fullName": "Aaron Judge",
+        "link": "/api/v1/people/592450"
+      },
+      "jerseyNumber": "99",
+      "position": {
+        "code": "9",
+        "name": "Outfielder",
+        "type": "Outfielder",
+        "abbreviation": "RF"
+      },
+      "status": {
+        "code": "A",
+        "description": "Active"
+      }
+    },
+    {
+      "person": {
+        "id": 543257,
+        "fullName": "Giancarlo Stanton",
+        "link": "/api/v1/people/543257"
+      },
+      "jerseyNumber": "27",
+      "position": {
+        "code": "D",
+        "name": "Designated Hitter",
+        "type": "Hitter",
+        "abbreviation": "DH"
+      },
+      "status": {
+        "code": "A",
+        "description": "Active"
+      }
+    }
+  ],
+  "link": "/api/v1/teams/147/roster",
+  "teamId": 147,
+  "rosterType": "active"
+}

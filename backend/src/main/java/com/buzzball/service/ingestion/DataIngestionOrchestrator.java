@@ -1,11 +1,13 @@
 package com.buzzball.service.ingestion;
 
+import com.azure.core.annotation.Post;
 import com.buzzball.model.*;
 import com.buzzball.repository.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.PostConstruct;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -48,6 +50,12 @@ public class DataIngestionOrchestrator {
         log.info("Starting Statcast data refresh for season {}", season);
 
         List<StatcastRow> battingRows = statcastClient.fetchBattingStatcast(season);
+        if (battingRows.isEmpty() && season > 2020) {
+            log.warn("No Statcast batting data for {} — falling back to {}", season, season - 1);
+            season = season - 1;
+            battingRows = statcastClient.fetchBattingStatcast(season);
+        }
+
         Map<String, StatcastRow> battingByPlayerId = battingRows.stream()
                 .collect(Collectors.toMap(StatcastRow::getPlayerId, r -> r, (a, b) -> a));
 
@@ -60,6 +68,9 @@ public class DataIngestionOrchestrator {
         }
 
         List<StatcastRow> pitchingRows = statcastClient.fetchPitchingStatcast(season);
+        if (pitchingRows.isEmpty() && season > 2020) {
+            pitchingRows = statcastClient.fetchPitchingStatcast(season - 1);
+        }
         for (StatcastRow row : pitchingRows) {
             try {
                 updatePitchingWithStatcast(row.getPlayerId(), row, season);
@@ -75,6 +86,11 @@ public class DataIngestionOrchestrator {
         log.info("Starting FanGraphs data refresh for season {}", season);
 
         List<Map<String, Object>> battingData = fanGraphsClient.fetchBattingLeaderboard(season);
+        if (battingData.isEmpty() && season > 2020) {
+            log.warn("FanGraphs batting data unavailable for {} — falling back to {}", season, season - 1);
+            season = season - 1;
+            battingData = fanGraphsClient.fetchBattingLeaderboard(season);
+        }
         if (battingData.isEmpty()) {
             log.warn("FanGraphs batting data unavailable (circuit open or empty) — serving stale data");
         } else {
@@ -88,6 +104,9 @@ public class DataIngestionOrchestrator {
         }
 
         List<Map<String, Object>> pitchingData = fanGraphsClient.fetchPitchingLeaderboard(season);
+        if (pitchingData.isEmpty() && season > 2020) {
+            pitchingData = fanGraphsClient.fetchPitchingLeaderboard(season - 1);
+        }
         if (pitchingData.isEmpty()) {
             log.warn("FanGraphs pitching data unavailable (circuit open or empty) — serving stale data");
         } else {
