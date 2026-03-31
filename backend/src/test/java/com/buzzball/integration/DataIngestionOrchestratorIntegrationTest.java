@@ -159,12 +159,11 @@ class DataIngestionOrchestratorIntegrationTest extends BaseIntegrationTest {
         verify(battingStatsRepository, times(3)).save(captor.capture());
 
         List<BattingStats> saved = captor.getAllValues();
-        // FanGraphs uses its own playerid (not MLB ID)
         assertThat(saved).extracting(BattingStats::getPlayerId)
-                .containsExactlyInAnyOrder("15640", "19755", "17350");
+                .containsExactlyInAnyOrder("592450", "660271", "646240");
 
         BattingStats judge = saved.stream()
-                .filter(s -> "15640".equals(s.getPlayerId())).findFirst().orElseThrow();
+                .filter(s -> "592450".equals(s.getPlayerId())).findFirst().orElseThrow();
         assertThat(judge.getWoba()).isEqualTo(0.463);
         assertThat(judge.getWrcPlus()).isEqualTo(204.5);
         assertThat(judge.getFWar()).isEqualTo(10.1);
@@ -185,10 +184,10 @@ class DataIngestionOrchestratorIntegrationTest extends BaseIntegrationTest {
 
         List<PitchingStats> saved = captor.getAllValues();
         assertThat(saved).extracting(PitchingStats::getPlayerId)
-                .containsExactlyInAnyOrder("22267", "27498");
+                .containsExactlyInAnyOrder("669373", "676979");
 
         PitchingStats skubal = saved.stream()
-                .filter(s -> "22267".equals(s.getPlayerId())).findFirst().orElseThrow();
+                .filter(s -> "669373".equals(s.getPlayerId())).findFirst().orElseThrow();
         assertThat(skubal.getFip()).isEqualTo(2.449);
         assertThat(skubal.getXfip()).isEqualTo(2.664);
         assertThat(skubal.getFWar()).isEqualTo(6.6);
@@ -201,11 +200,11 @@ class DataIngestionOrchestratorIntegrationTest extends BaseIntegrationTest {
         stubFanGraphsPitching(2025, "stubs/fangraphs_pitching.json");
 
         PitchingStats existing = PitchingStats.builder()
-                .id("22267-2025").playerId("22267").season(2025)
+                .id("669373-2025").playerId("669373").season(2025)
                 .xera(2.45).whiffPct(35.0)
                 .build();
-        when(pitchingStatsRepository.findById("22267-2025")).thenReturn(Optional.of(existing));
-        when(pitchingStatsRepository.findById(argThat(id -> !"22267-2025".equals(id)))).thenReturn(Optional.empty());
+        when(pitchingStatsRepository.findById("669373-2025")).thenReturn(Optional.of(existing));
+        when(pitchingStatsRepository.findById(argThat(id -> !"669373-2025".equals(id)))).thenReturn(Optional.empty());
         when(battingStatsRepository.findById(anyString())).thenReturn(Optional.empty());
 
         orchestrator.refreshFanGraphsData(2025);
@@ -214,7 +213,7 @@ class DataIngestionOrchestratorIntegrationTest extends BaseIntegrationTest {
         verify(pitchingStatsRepository, atLeast(1)).save(captor.capture());
 
         PitchingStats merged = captor.getAllValues().stream()
-                .filter(s -> "22267".equals(s.getPlayerId())).findFirst().orElseThrow();
+                .filter(s -> "669373".equals(s.getPlayerId())).findFirst().orElseThrow();
         // Statcast fields preserved from existing record
         assertThat(merged.getXera()).isEqualTo(2.45);
         assertThat(merged.getWhiffPct()).isEqualTo(35.0);
@@ -252,9 +251,9 @@ class DataIngestionOrchestratorIntegrationTest extends BaseIntegrationTest {
     void refreshFanGraphsData_skipsRowsWithMissingPlayerId() {
         String json = """
                 {"data":[
-                  {"playerid":15640,"wOBA":0.463,"wRC+":204.5,"WAR":10.1,"BABIP":0.376},
-                  {"wOBA":0.300,"wRC+":100.0,"WAR":2.0,"BABIP":0.290},
-                  {"playerid":"null","wOBA":0.310,"wRC+":105.0,"WAR":2.5,"BABIP":0.300}
+                  {"playerid":15640,"xMLBAMID":592450,"wOBA":0.463,"wRC+":204.5,"WAR":10.1,"BABIP":0.376},
+                  {"playerid":99999,"wOBA":0.300,"wRC+":100.0,"WAR":2.0,"BABIP":0.290},
+                  {"playerid":88888,"xMLBAMID":"null","wOBA":0.310,"wRC+":105.0,"WAR":2.5,"BABIP":0.300}
                 ],"totalCount":3}""";
         wireMock.stubFor(get(urlPathEqualTo("/api/leaders/major-league/data"))
                 .withQueryParam("stats", equalTo("bat"))
@@ -266,7 +265,7 @@ class DataIngestionOrchestratorIntegrationTest extends BaseIntegrationTest {
 
         orchestrator.refreshFanGraphsData(2025);
 
-        // Only the row with valid playerid=15640 should be saved
+        // Only the row with valid xMLBAMID=592450 should be saved
         verify(battingStatsRepository, times(1)).save(any(BattingStats.class));
     }
 

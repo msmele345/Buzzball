@@ -1,5 +1,6 @@
 package com.buzzball.service;
 
+import com.buzzball.dto.LeagueLeaderDto;
 import com.buzzball.dto.TrendingPlayerDto;
 import com.buzzball.fixtures.BStatsTestProvider;
 import com.buzzball.fixtures.PlayerFixtures;
@@ -69,5 +70,15 @@ class DashboardServiceTest {
         List<TrendingPlayerDto> result = dashboardService.getTrendingHitters();
 
         assertThat(result).isEmpty();
+    }
+
+    @Test
+    void getLeagueLeaders_returnsPlayerName() {
+        when(battingStatsRepository.findAll()).thenReturn(List.of(bStatsTestData.elitePowerHitter()));
+        when(playerRepository.findById("p1")).thenReturn(Optional.of(PlayerFixtures.JUDGE));
+
+        List<LeagueLeaderDto> actual = dashboardService.getLeagueLeaders();
+
+        assertThat(actual.getFirst().getPlayerName()).isEqualTo("Aaron Judge");
     }
 }

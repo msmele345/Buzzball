@@ -160,7 +160,7 @@ public class DataIngestionOrchestrator {
     }
 
     private void updateBattingWithFanGraphs(Map<String, Object> row, int season) {
-        String playerId = String.valueOf(row.getOrDefault("playerid", ""));
+        String playerId = String.valueOf(row.getOrDefault("xMLBAMID", ""));
         if (playerId.isEmpty() || "null".equals(playerId)) return;
 
         String id = playerId + "-" + season;
@@ -176,7 +176,7 @@ public class DataIngestionOrchestrator {
     }
 
     private void updatePitchingWithFanGraphs(Map<String, Object> row, int season) {
-        String playerId = String.valueOf(row.getOrDefault("playerid", ""));
+        String playerId = String.valueOf(row.getOrDefault("xMLBAMID", ""));
         if (playerId.isEmpty() || "null".equals(playerId)) return;
 
         String id = playerId + "-" + season;
@@ -195,6 +195,10 @@ public class DataIngestionOrchestrator {
         if (value == null || value.isBlank() || "null".equalsIgnoreCase(value) || "N/A".equalsIgnoreCase(value)) {
             return null;
         }
-        try { return Double.parseDouble(value.trim().replace("%", "")); } catch (Exception e) { return null; }
+        try {
+            return Double.parseDouble(value.trim().replace("%", ""));
+        } catch (Exception e) {
+            return null;
+        }
     }
 }
