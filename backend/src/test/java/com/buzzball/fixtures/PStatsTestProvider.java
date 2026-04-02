@@ -4,7 +4,8 @@ import com.buzzball.model.PitchingStats;
 
 import java.util.List;
 
-public class PitchingStatsFixtures {
+public enum PStatsTestProvider {
+    INSTANCE;
 
     /** Ace / Cy Young-calibre starter — NYY (playerId = p5) */
     public static final PitchingStats ACE_2024 = PitchingStats.builder()
@@ -97,4 +98,3 @@ public class PitchingStatsFixtures {
         return List.of(ACE_2024, MID_ROTATION_2024, CLOSER_2024);
     }
 }
-

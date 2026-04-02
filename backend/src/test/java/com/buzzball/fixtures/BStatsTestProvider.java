@@ -19,6 +19,7 @@ public enum BStatsTestProvider {
                 .homeRuns(48)
                 .rbi(120)
                 .walks(90)
+                .woba(0.420)
                 .strikeouts(148)
                 .battingAverage(0.306)
                 .onBasePercentage(0.406)

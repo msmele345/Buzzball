@@ -3,6 +3,7 @@ package com.buzzball.service;
 import com.buzzball.dto.LeagueLeaderDto;
 import com.buzzball.dto.TrendingPlayerDto;
 import com.buzzball.fixtures.BStatsTestProvider;
+import com.buzzball.fixtures.PStatsTestProvider;
 import com.buzzball.fixtures.PlayerFixtures;
 import com.buzzball.mapper.PlayerMapper;
 import com.buzzball.mapper.TeamMapper;
@@ -47,6 +48,7 @@ class DashboardServiceTest {
     private DashboardService dashboardService;
 
     private BStatsTestProvider bStatsTestData = BStatsTestProvider.INSTANCE;
+    private PStatsTestProvider pStatsTestData = PStatsTestProvider.INSTANCE;
 
     @Test
     void getTrendingHitters_returnsPlayersSortedByFWar() {
@@ -61,6 +63,19 @@ class DashboardServiceTest {
         assertThat(result.get(0).getCurrentWar()).isEqualTo(7.2); // Judge highest fWar
         assertThat(result.get(1).getCurrentWar()).isEqualTo(4.1); // Devers
         assertThat(result.get(2).getCurrentWar()).isEqualTo(0.9); // Utility
+    }
+
+    @Test
+    void getTrendingPitchers_returnsPitchersSortedByFIP() {
+        when(pitchingStatsRepository.findAll())
+                .thenReturn(pStatsTestData.all());
+
+        when(playerRepository.findById("p5"))
+                .thenReturn(Optional.of(PlayerFixtures.ACE));
+
+        List<TrendingPlayerDto> actual = dashboardService.getTrendingPitchers();
+
+        assertThat(actual.getFirst().getName()).isEqualTo("Gerrit Cole");
     }
 
     @Test
@@ -80,5 +95,6 @@ class DashboardServiceTest {
         List<LeagueLeaderDto> actual = dashboardService.getLeagueLeaders();
 
         assertThat(actual.getFirst().getPlayerName()).isEqualTo("Aaron Judge");
+        assertThat(actual.getFirst().getCategory()).isEqualTo("wOBA");
     }
 }

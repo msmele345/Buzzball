@@ -11,6 +11,7 @@
 - Tests should FAIL initially (no implementation exists)
 - Only after tests are written, implement minimal code to pass
 
+### Backend Testing Conventions
 - Controllers should have @Springbootest integration slice tests
 - For Integration tests, Autowire the TestRestTemplate bean and use @MockBean to mock the cosmos layer.
 - Controllers should also have @ExtendWith(MockitoExtension.class) unit tests with a mocked web layer.

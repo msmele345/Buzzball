@@ -5,11 +5,13 @@ import Loader from "../UI/Loader.tsx";
 
 export interface StandingsTableProps {
     teams: TeamSummaryDto[];
-    title: string
+    title: string;
+    onCompareSelect?: () => void;
 }
 
 
 function StandingsTable({teams, title}: StandingsTableProps) {
+
     return (
         <div>
             <h3 className="text-xs font-bold text-gold uppercase tracking-[0.15em] mb-2">{title}</h3>
@@ -54,7 +56,11 @@ function StandingsTable({teams, title}: StandingsTableProps) {
 
 export function TeamStandingsTable() {
     const {data: dashboard, isLoading, error} = useDashboard();
-    const leagueFilter = useUiStore((s) => s.leagueFilter);
+    const leagueFilter  = useUiStore((s) => s.leagueFilter);
+
+    // const handleCompareSelect = (val: string) => {
+    //     setTeamComparisonList([])
+    // }
 
     if (isLoading) return (
         <Loader/>

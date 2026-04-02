@@ -101,10 +101,6 @@ public class PlayerFixtures {
         return List.of(JUDGE, DEVERS, UTILITY, INACTIVE, ACE, MID_ROTATION, CLOSER);
     }
 
-    public static List<Player> active() {
-        return List.of(JUDGE, DEVERS, UTILITY, ACE, MID_ROTATION, CLOSER);
-    }
-
     public static List<Player> byTeam(String teamId) {
         return all().stream()
                 .filter(p -> p.getTeamId().equals(teamId))
