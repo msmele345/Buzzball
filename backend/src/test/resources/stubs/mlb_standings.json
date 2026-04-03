@@ -1,0 +1,40 @@
+{
+  "copyright": "Copyright 2025 MLB Advanced Media, L.P.",
+  "records": [
+    {
+      "standingsType": "regularSeason",
+      "league": { "id": 103, "name": "American League" },
+      "division": { "id": 201, "name": "American League East" },
+      "teamRecords": [
+        {
+          "team": {
+            "id": 147,
+            "name": "New York Yankees",
+            "abbreviation": "NYY",
+            "division": { "id": 201, "name": "American League East" },
+            "league": { "id": 103, "name": "American League" }
+          },
+          "season": "2025",
+          "wins": 95,
+          "losses": 67,
+          "winningPercentage": ".586",
+          "gamesBack": "-"
+        },
+        {
+          "team": {
+            "id": 111,
+            "name": "Boston Red Sox",
+            "abbreviation": "BOS",
+            "division": { "id": 201, "name": "American League East" },
+            "league": { "id": 103, "name": "American League" }
+          },
+          "season": "2025",
+          "wins": 88,
+          "losses": 74,
+          "winningPercentage": ".543",
+          "gamesBack": "7.0"
+        }
+      ]
+    }
+  ]
+}

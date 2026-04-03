@@ -1,13 +1,18 @@
 package com.buzzball.service.ingestion;
 
+import com.azure.core.annotation.Patch;
+import com.azure.core.annotation.Post;
 import com.buzzball.model.*;
 import com.buzzball.repository.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.PostConstruct;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -48,6 +53,12 @@ public class DataIngestionOrchestrator {
         log.info("Starting Statcast data refresh for season {}", season);
 
         List<StatcastRow> battingRows = statcastClient.fetchBattingStatcast(season);
+        if (battingRows.isEmpty() && season > 2020) {
+            log.warn("No Statcast batting data for {} — falling back to {}", season, season - 1);
+            season = season - 1;
+            battingRows = statcastClient.fetchBattingStatcast(season);
+        }
+
         Map<String, StatcastRow> battingByPlayerId = battingRows.stream()
                 .collect(Collectors.toMap(StatcastRow::getPlayerId, r -> r, (a, b) -> a));
 
@@ -60,6 +71,9 @@ public class DataIngestionOrchestrator {
         }
 
         List<StatcastRow> pitchingRows = statcastClient.fetchPitchingStatcast(season);
+        if (pitchingRows.isEmpty() && season > 2020) {
+            pitchingRows = statcastClient.fetchPitchingStatcast(season - 1);
+        }
         for (StatcastRow row : pitchingRows) {
             try {
                 updatePitchingWithStatcast(row.getPlayerId(), row, season);
@@ -75,6 +89,11 @@ public class DataIngestionOrchestrator {
         log.info("Starting FanGraphs data refresh for season {}", season);
 
         List<Map<String, Object>> battingData = fanGraphsClient.fetchBattingLeaderboard(season);
+        if (battingData.isEmpty() && season > 2020) {
+            log.warn("FanGraphs batting data unavailable for {} — falling back to {}", season, season - 1);
+            season = season - 1;
+            battingData = fanGraphsClient.fetchBattingLeaderboard(season);
+        }
         if (battingData.isEmpty()) {
             log.warn("FanGraphs batting data unavailable (circuit open or empty) — serving stale data");
         } else {
@@ -88,6 +107,9 @@ public class DataIngestionOrchestrator {
         }
 
         List<Map<String, Object>> pitchingData = fanGraphsClient.fetchPitchingLeaderboard(season);
+        if (pitchingData.isEmpty() && season > 2020) {
+            pitchingData = fanGraphsClient.fetchPitchingLeaderboard(season - 1);
+        }
         if (pitchingData.isEmpty()) {
             log.warn("FanGraphs pitching data unavailable (circuit open or empty) — serving stale data");
         } else {
@@ -104,9 +126,54 @@ public class DataIngestionOrchestrator {
     }
 
     public void refreshStandings() {
+        purgeStaleTeamDocuments();
+        purgeStalePlayerDocuments();
         List<Team> teams = mlbStatsApiClient.fetchStandings();
-        teams.forEach(teamRepository::save);
+        teams.stream()
+                .filter(t -> t.getDivision() != null)
+                .forEach(teamRepository::save);
         log.info("Upserted {} team standings", teams.size());
+    }
+
+    public void purgeStaleTeamDocuments() {
+        log.info("Purging stale team documents with null division");
+        List<Team> allTeams = new ArrayList<>();
+        teamRepository.findAll().forEach(allTeams::add);
+
+        List<Team> staleTeams = allTeams.stream()
+                .filter(t -> t.getDivision() == null)
+                .toList();
+
+        for (Team stale : staleTeams) {
+            try {
+                teamRepository.delete(stale);
+                log.info("Deleted stale team document: id={}", stale.getTeamId());
+            } catch (Exception e) {
+                log.error("Failed to delete stale team {}: {}", stale.getTeamId(), e.getMessage());
+            }
+        }
+        log.info("Purge complete: removed {} stale documents", staleTeams.size());
+    }
+
+    public void purgeStalePlayerDocuments() {
+        List<Player> allPlayers = new ArrayList<>();
+        playerRepository.findAll().forEach(allPlayers::add);
+
+        Pattern numericPattern = Pattern.compile(".*\\d+.*");
+
+        List<Player> stalePlayers = allPlayers.stream()
+                .filter(p -> p.getName() == null || numericPattern.matcher(p.getName()).matches())
+                .toList();
+
+        for (Player stale : stalePlayers) {
+            try {
+//                playerRepository.delete(stale);
+                log.info("stale player document count: {}", stalePlayers.size());
+                log.info("Deleted stale player document: id={}", stale.getPlayerId());
+            } catch (Exception e) {
+                log.error("Failed to delete stale player {}: {}", stale.getPlayerId(), e.getMessage());
+            }
+        }
     }
 
     private void updateBattingWithStatcast(String playerId, StatcastRow row, int season) {
@@ -141,7 +208,7 @@ public class DataIngestionOrchestrator {
     }
 
     private void updateBattingWithFanGraphs(Map<String, Object> row, int season) {
-        String playerId = String.valueOf(row.getOrDefault("playerid", ""));
+        String playerId = String.valueOf(row.getOrDefault("xMLBAMID", ""));
         if (playerId.isEmpty() || "null".equals(playerId)) return;
 
         String id = playerId + "-" + season;
@@ -157,7 +224,7 @@ public class DataIngestionOrchestrator {
     }
 
     private void updatePitchingWithFanGraphs(Map<String, Object> row, int season) {
-        String playerId = String.valueOf(row.getOrDefault("playerid", ""));
+        String playerId = String.valueOf(row.getOrDefault("xMLBAMID", ""));
         if (playerId.isEmpty() || "null".equals(playerId)) return;
 
         String id = playerId + "-" + season;
@@ -176,6 +243,10 @@ public class DataIngestionOrchestrator {
         if (value == null || value.isBlank() || "null".equalsIgnoreCase(value) || "N/A".equalsIgnoreCase(value)) {
             return null;
         }
-        try { return Double.parseDouble(value.trim().replace("%", "")); } catch (Exception e) { return null; }
+        try {
+            return Double.parseDouble(value.trim().replace("%", ""));
+        } catch (Exception e) {
+            return null;
+        }
     }
 }

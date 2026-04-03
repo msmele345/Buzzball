@@ -8,7 +8,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -20,13 +19,16 @@ public class TeamService {
 
     @Cacheable("standings")
     public List<TeamSummaryDto> getAllTeams() {
-        List<Team> teams = new ArrayList<>();
-        teamRepository.findAll().forEach(teams::add);
-        return teams.stream().map(teamMapper::toSummaryDto).toList();
+        return teamRepository.findAllByDivisionIsNotNull()
+                .stream()
+                .map(teamMapper::toSummaryDto)
+                .toList();
     }
 
     public TeamSummaryDto getTeam(String teamId) {
-        return teamRepository.findById(teamId)
+        return teamRepository.findByTeamIdAndDivisionIsNotNull(teamId)
+                .stream()
+                .findFirst()
                 .map(teamMapper::toSummaryDto)
                 .orElseThrow(() -> new RuntimeException("Team not found: " + teamId));
     }

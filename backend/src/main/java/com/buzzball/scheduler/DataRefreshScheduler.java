@@ -3,6 +3,7 @@ package com.buzzball.scheduler;
 import com.buzzball.service.ingestion.DataIngestionOrchestrator;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
@@ -29,8 +30,10 @@ public class DataRefreshScheduler {
         orchestrator.refreshStandings();
     }
 
-    /** Statcast advanced metrics: daily at 6 AM ET */
+    /** Statcast advanced metrics: on startup (90s delay) + daily at 6 AM ET */
+    @CacheEvict(value = "dashboard-trending", allEntries = true)
     @Scheduled(cron = "0 0 6 * * *", zone = "America/New_York")
+    @Scheduled(fixedDelay = Long.MAX_VALUE, initialDelay = 90_000)
     public void refreshStatcast() {
         log.info("Scheduler: starting Statcast refresh");
         try {
@@ -40,8 +43,10 @@ public class DataRefreshScheduler {
         }
     }
 
-    /** FanGraphs WAR/FIP: daily at 7 AM ET */
+    /** FanGraphs WAR/FIP: on startup (120s delay) + daily at 7 AM ET */
+    @CacheEvict(value = "dashboard-trending", allEntries = true)
     @Scheduled(cron = "0 0 7 * * *", zone = "America/New_York")
+    @Scheduled(fixedDelay = Long.MAX_VALUE, initialDelay = 120_000)
     public void refreshFanGraphs() {
         log.info("Scheduler: starting FanGraphs refresh");
         orchestrator.refreshFanGraphsData(Year.now().getValue());

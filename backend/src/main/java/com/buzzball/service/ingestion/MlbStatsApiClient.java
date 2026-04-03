@@ -4,6 +4,7 @@ import com.buzzball.model.Player;
 import com.buzzball.model.Team;
 import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClient;
 
@@ -16,13 +17,12 @@ import java.util.Map;
 @Service
 public class MlbStatsApiClient {
 
-    private static final String BASE_URL = "https://statsapi.mlb.com/api/v1";
-
     private final RestClient restClient;
 
-    public MlbStatsApiClient(RestClient.Builder restClientBuilder) {
+    public MlbStatsApiClient(RestClient.Builder restClientBuilder,
+                             @Value("${buzzball.clients.mlb.base-url:https://statsapi.mlb.com/api/v1}") String baseUrl) {
         this.restClient = restClientBuilder
-                .baseUrl(BASE_URL)
+                .baseUrl(baseUrl)
                 .build();
     }
 

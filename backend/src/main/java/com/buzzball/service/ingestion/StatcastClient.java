@@ -1,10 +1,12 @@
 package com.buzzball.service.ingestion;
 
 import com.buzzball.model.StatcastRow;
+import com.buzzball.service.CsvParser;
 import com.fasterxml.jackson.databind.MappingIterator;
 import com.fasterxml.jackson.dataformat.csv.CsvMapper;
 import com.fasterxml.jackson.dataformat.csv.CsvSchema;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClient;
 
@@ -14,13 +16,18 @@ import java.util.List;
 @Service
 public class StatcastClient {
 
-    private static final String SAVANT_BASE_URL = "https://baseballsavant.mlb.com";
-
     private final RestClient restClient;
+    private final CsvParser csvParser;
     private final CsvMapper csvMapper = new CsvMapper();
 
-    public StatcastClient(RestClient.Builder restClientBuilder) {
-        this.restClient = restClientBuilder.baseUrl(SAVANT_BASE_URL).build();
+    public StatcastClient(
+            RestClient.Builder restClientBuilder,
+            @Value("${buzzball.clients.statcast.base-url:https://baseballsavant.mlb.com}")
+            String baseUrl,
+            CsvParser csvParser
+    ) {
+        this.csvParser = csvParser;
+        this.restClient = restClientBuilder.baseUrl(baseUrl).build();
     }
 
     public List<StatcastRow> fetchBattingStatcast(int season) {
@@ -29,7 +36,7 @@ public class StatcastClient {
                 .uri("/leaderboard/expected_statistics?type=batter&year={year}&position=&team=&min=q&csv=true", season)
                 .retrieve()
                 .body(String.class);
-        return parseCsv(csvData);
+        return csvParser.parseCsv(csvData);
     }
 
     public List<StatcastRow> fetchPitchingStatcast(int season) {
@@ -38,26 +45,6 @@ public class StatcastClient {
                 .uri("/leaderboard/expected_statistics?type=pitcher&year={year}&position=&team=&min=q&csv=true", season)
                 .retrieve()
                 .body(String.class);
-        return parseCsv(csvData);
-    }
-
-    private List<StatcastRow> parseCsv(String csvData) {
-        if (csvData == null || csvData.isBlank()) {
-            log.warn("Empty CSV data received from Statcast");
-            return List.of();
-        }
-        try {
-            CsvSchema schema = CsvSchema.emptySchema().withHeader();
-            MappingIterator<StatcastRow> iterator = csvMapper
-                    .readerFor(StatcastRow.class)
-                    .with(schema)
-                    .readValues(csvData);
-            List<StatcastRow> rows = iterator.readAll();
-            log.info("Parsed {} Statcast rows", rows.size());
-            return rows;
-        } catch (Exception e) {
-            log.error("Failed to parse Statcast CSV: {}", e.getMessage(), e);
-            throw new RuntimeException("Statcast CSV schema may have changed — failing loudly: " + e.getMessage(), e);
-        }
+        return csvParser.parseCsv(csvData);
     }
 }
