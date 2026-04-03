@@ -32,6 +32,7 @@ export function TeamComparisonChart() {
 
   return (
     <section>
+        {teamComparisonList.length >= 2 ? <div> Comparison Count: {teamComparisonList.length} </div> : <></> }
       <div className="flex items-center justify-between mb-4">
         <h2 className="text-xl font-bold text-white border-l-2 border-neon-green pl-3">Team Comparison</h2>
         <button
@@ -49,7 +50,7 @@ export function TeamComparisonChart() {
             className="px-2 py-1 rounded-lg text-xs font-mono font-medium text-black"
             style={{ backgroundColor: TEAM_COLORS[i] }}
           >
-            {team.abbreviation}
+            {team.name}
           </span>
         ))}
       </div>

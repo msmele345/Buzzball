@@ -2,15 +2,16 @@ import {useDashboard} from '../../hooks/useDashboard';
 import {useUiStore} from '../../store/uiStore';
 import type {TeamSummaryDto} from '../../types';
 import Loader from "../UI/Loader.tsx";
+import { useEffect } from "react";
 
 export interface StandingsTableProps {
     teams: TeamSummaryDto[];
     title: string;
-    onCompareSelect?: () => void;
+    onCompareSelect: (id: string) => void;
 }
 
 
-function StandingsTable({teams, title}: StandingsTableProps) {
+function StandingsTable({teams, title, onCompareSelect}: StandingsTableProps) {
 
     return (
         <div>
@@ -29,7 +30,7 @@ function StandingsTable({teams, title}: StandingsTableProps) {
                     </thead>
                     <tbody>
                     {teams.map((team) => (
-                        <tr key={team.teamId}
+                        <tr key={team.teamId} onClick={() => onCompareSelect(team.teamId)}
                             className="border-b border-bg-surface-alt hover:bg-bg-surface-alt transition-colors duration-150">
                             <td className="py-2 pr-4 text-white font-semibold">{team.abbreviation}</td>
                             <td className="text-right py-2 px-2 font-mono text-text-secondary">{team.wins}</td>
@@ -54,13 +55,22 @@ function StandingsTable({teams, title}: StandingsTableProps) {
     );
 }
 
-export function TeamStandingsTable() {
+const TeamStandingsTable = () => {
     const {data: dashboard, isLoading, error} = useDashboard();
-    const leagueFilter  = useUiStore((s) => s.leagueFilter);
+    const {leagueFilter, setTeamComparisonList, teamComparisonList} = useUiStore((s) => s);
 
-    // const handleCompareSelect = (val: string) => {
-    //     setTeamComparisonList([])
-    // }
+    useEffect(() => {
+        console.log('teamLIST:', teamComparisonList);
+    }, [teamComparisonList]);
+
+    const handleCompareSelect = (id: string) => {
+        if (teamComparisonList.includes(id))
+            setTeamComparisonList(teamComparisonList.filter(team => team !== id));
+        else if (teamComparisonList.length < 2) {
+            setTeamComparisonList([...teamComparisonList, id]);
+        }
+        console.log('Compare selected:', id);
+    }
 
     if (isLoading) return (
         <Loader/>
@@ -75,13 +85,17 @@ export function TeamStandingsTable() {
                 <h2 className="text-xl font-bold text-white mb-4 border-l-2 border-neon-green pl-3">Standings</h2>
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                     {(leagueFilter === 'all' || leagueFilter === 'AL') && (
-                        <StandingsTable teams={dashboard.alStandings} title="American League"/>
+                        <StandingsTable teams={dashboard.alStandings} title="American League"
+                                        onCompareSelect={handleCompareSelect}/>
                     )}
                     {(leagueFilter === 'all' || leagueFilter === 'NL') && (
-                        <StandingsTable teams={dashboard.nlStandings} title="National League"/>
+                        <StandingsTable teams={dashboard.nlStandings} title="National League"
+                                        onCompareSelect={handleCompareSelect}/>
                     )}
                 </div>
             </section>
         </>
     );
 }
+
+export { TeamStandingsTable };

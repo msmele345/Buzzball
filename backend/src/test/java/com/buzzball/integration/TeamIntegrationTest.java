@@ -7,7 +7,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
 import java.util.List;
-import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
@@ -18,7 +17,7 @@ class TeamIntegrationTest extends BaseIntegrationTest {
     void getAllTeams_fullFlow_200() {
         Team yankees = buildTeam("nyy", "Yankees", "NYY", "AL East", "AL", 50, 30);
         Team redSox = buildTeam("bos", "Red Sox", "BOS", "AL East", "AL", 45, 35);
-        when(teamRepository.findAll()).thenReturn(List.of(yankees, redSox));
+        when(teamRepository.findAllByDivisionIsNotNull()).thenReturn(List.of(yankees, redSox));
 
         ResponseEntity<String> response = restTemplate.getForEntity("/api/v1/teams", String.class);
 
@@ -41,7 +40,7 @@ class TeamIntegrationTest extends BaseIntegrationTest {
     @Test
     void getTeam_fullFlow_200() {
         Team yankees = buildTeam("nyy", "Yankees", "NYY", "AL East", "AL", 50, 30);
-        when(teamRepository.findById("nyy")).thenReturn(Optional.of(yankees));
+        when(teamRepository.findByTeamIdAndDivisionIsNotNull("nyy")).thenReturn(List.of(yankees));
 
         ResponseEntity<String> response = restTemplate.getForEntity("/api/v1/teams/nyy", String.class);
 
@@ -63,7 +62,7 @@ class TeamIntegrationTest extends BaseIntegrationTest {
         // Verifies current behavior: TeamService throws generic RuntimeException,
         // GlobalExceptionHandler maps to 500 ProblemDetail.
         // Will change to 404 when dedicated TeamNotFoundException is introduced.
-        when(teamRepository.findById("unknown")).thenReturn(Optional.empty());
+        when(teamRepository.findByTeamIdAndDivisionIsNotNull("unknown")).thenReturn(List.of());
 
         ResponseEntity<String> response = restTemplate.getForEntity("/api/v1/teams/unknown", String.class);
 
@@ -98,8 +97,8 @@ class TeamIntegrationTest extends BaseIntegrationTest {
     void compareTeams_fullFlow_200() {
         Team yankees = buildTeam("nyy", "Yankees", "NYY", "AL East", "AL", 50, 30);
         Team redSox = buildTeam("bos", "Red Sox", "BOS", "AL East", "AL", 45, 35);
-        when(teamRepository.findById("nyy")).thenReturn(Optional.of(yankees));
-        when(teamRepository.findById("bos")).thenReturn(Optional.of(redSox));
+        when(teamRepository.findByTeamIdAndDivisionIsNotNull("nyy")).thenReturn(List.of(yankees));
+        when(teamRepository.findByTeamIdAndDivisionIsNotNull("bos")).thenReturn(List.of(redSox));
 
         ResponseEntity<String> response = restTemplate.getForEntity(
                 "/api/v1/teams/compare?teamIds=nyy,bos", String.class);
