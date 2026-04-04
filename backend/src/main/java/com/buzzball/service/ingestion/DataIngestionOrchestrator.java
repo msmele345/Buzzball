@@ -127,7 +127,8 @@ public class DataIngestionOrchestrator {
 
     public void refreshStandings() {
         purgeStaleTeamDocuments();
-        purgeStalePlayerDocuments();
+        //clean up TODO
+//        purgeStalePlayerDocuments();
         List<Team> teams = mlbStatsApiClient.fetchStandings();
         teams.stream()
                 .filter(t -> t.getDivision() != null)
@@ -167,7 +168,7 @@ public class DataIngestionOrchestrator {
 
         for (Player stale : stalePlayers) {
             try {
-//                playerRepository.delete(stale);
+                playerRepository.delete(stale);
                 log.info("stale player document count: {}", stalePlayers.size());
                 log.info("Deleted stale player document: id={}", stale.getPlayerId());
             } catch (Exception e) {
