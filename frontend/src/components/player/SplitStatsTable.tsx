@@ -6,7 +6,7 @@ interface SplitStatsTableProps {
 
 // Placeholder splits table — real split data would come from a dedicated API endpoint
 export function SplitStatsTable({ currentStats }: SplitStatsTableProps) {
-  if (!currentStats) return <div className="text-text-muted text-sm">No stats available</div>;
+  if (!currentStats) return <div className="text-text-muted text-sm">No plate appearances to speak of yet.</div>;
 
   return (
     <div>

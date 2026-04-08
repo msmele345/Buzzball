@@ -1,4 +1,5 @@
 import { useLeagueLeaders } from '../../hooks/useDashboard';
+import Loader from "../UI/Loader.tsx";
 
 const CATEGORIES = ['wOBA', 'WAR', 'FIP'];
 
@@ -6,19 +7,19 @@ export function LeagueLeadersCard() {
   const { data: leaders, isLoading, error } = useLeagueLeaders();
 
   if (isLoading) return (
-    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-      {[...Array(3)].map((_, i) => (
-        <div key={i} className="animate-pulse h-32 bg-bg-surface rounded-xl" />
-      ))}
-    </div>
+      <Loader
+          outerClassName={"grid grid-cols-1 sm:grid-cols-3 gap-4"}
+          itemClassNames={"animate-pulse h-32 bg-bg-surface rounded-xl"}
+      />
   );
-  if (error) return <div className="text-hot-red text-sm">Failed to load league leaders</div>;
+  if (error) return <div className="text-hot-red text-sm">Rain delay on the leaderboard. Failed to load league leaders.</div>;
+
   if (!leaders?.length) return null;
 
   return (
     <section>
       <h2 className="text-xl font-bold text-white mb-4 border-l-2 border-neon-green pl-3">League Leaders</h2>
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 card-stagger">
         {CATEGORIES.map((category) => {
           const categoryLeaders = leaders.filter((l) => l.category === category).slice(0, 3);
           return (

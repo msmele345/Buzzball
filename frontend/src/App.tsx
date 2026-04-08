@@ -19,13 +19,14 @@ class ErrorBoundary extends Component<
       return (
         <div className="min-h-screen bg-bg-primary flex items-center justify-center p-8">
           <div className="bg-bg-surface border border-border rounded-2xl p-8 max-w-md text-center">
-            <h1 className="text-xl font-bold text-white mb-2">Something went wrong</h1>
-            <p className="text-text-secondary mb-6">An unexpected error occurred. Please reload the page.</p>
+            <p className="text-4xl mb-4" aria-hidden>E-6</p>
+            <h1 className="text-xl font-bold text-white mb-2">Error on the play</h1>
+            <p className="text-text-secondary mb-6">Something threw wild. Let's reset the count.</p>
             <button
               onClick={() => window.location.reload()}
-              className="px-4 py-2 bg-neon-green text-black font-semibold rounded-lg hover:opacity-90 transition-opacity"
+              className="px-4 py-2 bg-neon-green text-black font-semibold rounded-lg hover:opacity-90 transition-opacity card-press"
             >
-              Reload
+              Take another pitch
             </button>
           </div>
         </div>
@@ -46,6 +47,16 @@ const queryClient = new QueryClient({
 
 function AppShell() {
   useLiveUpdates();
+
+  if (import.meta.env.DEV) {
+    // One-time console greeting for fellow nerds
+    console.log(
+      '%c\u26be BUZZBALL %c WAR is not just a board game.',
+      'color: #00ff87; font-weight: bold; font-size: 14px',
+      'color: #a0a0a0; font-size: 12px',
+    );
+  }
+
   return (
     <div className="min-h-screen bg-bg-primary text-white font-sans">
       <RouterProvider router={router} />

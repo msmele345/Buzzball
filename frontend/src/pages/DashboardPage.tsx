@@ -7,8 +7,8 @@ export function DashboardPage() {
   return (
     <div className="max-w-7xl mx-auto px-4 py-10 space-y-12">
       <div>
-        <h1 className="text-5xl font-black tracking-tight text-neon-green mb-1">BUZZBALL</h1>
-        <p className="text-xs uppercase tracking-[0.2em] text-text-muted">MLB Advanced Metrics &amp; Analytics For You</p>
+        <h1 className="text-3xl font-extrabold tracking-tight text-white">Dashboard</h1>
+        <p className="text-xs uppercase tracking-[0.2em] text-text-muted mt-1">MLB Advanced Metrics &amp; Analytics</p>
       </div>
       <TrendingPlayersSection />
       <LeagueLeadersCard />

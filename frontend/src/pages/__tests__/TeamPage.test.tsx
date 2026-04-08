@@ -74,7 +74,7 @@ describe('TeamPage', () => {
 
       renderTeamPage();
 
-      expect(screen.getByText('Team not found')).toBeInTheDocument();
+      expect(screen.getByText('Error at first')).toBeInTheDocument();
     });
   });
 

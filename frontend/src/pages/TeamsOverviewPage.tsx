@@ -11,7 +11,13 @@ export function TeamsOverviewPage() {
       ))}
     </div>
   );
-  if (error) return <div className="text-hot-red p-8">Failed to load teams</div>;
+  if (error) return (
+    <div className="max-w-7xl mx-auto px-4 py-16 text-center">
+      <p className="text-4xl mb-3" aria-hidden>E-6</p>
+      <p className="text-white font-bold text-lg mb-1">Bobbled at short</p>
+      <p className="text-text-secondary text-sm">Couldn't load the roster of teams. Give it another try.</p>
+    </div>
+  );
 
   const alTeams = teams?.filter((t) => t.league === 'AL') ?? [];
   const nlTeams = teams?.filter((t) => t.league === 'NL') ?? [];
@@ -28,7 +34,7 @@ export function TeamsOverviewPage() {
                 <Link
                   key={team.teamId}
                   to={`/teams/${team.teamId}`}
-                  className="bg-bg-surface border border-border rounded-xl p-4 transition-all duration-200 text-center hover:bg-bg-hover hover:border-neon-green/25 hover:scale-[1.02] hover:shadow-[0_0_15px_rgba(0,255,135,0.1)]"
+                  className="bg-bg-surface border border-border rounded-xl p-4 transition-all duration-200 text-center card-press hover:bg-bg-hover hover:border-neon-green/25"
                 >
                   <p className="text-white font-bold font-mono text-lg">{team.abbreviation}</p>
                   <p className="text-text-secondary font-mono text-xs mt-1">{team.wins}-{team.losses}</p>

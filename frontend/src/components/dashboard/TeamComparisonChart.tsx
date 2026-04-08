@@ -12,11 +12,7 @@ export function TeamComparisonChart() {
   const { data: comparison, isLoading } = useTeamComparison(teamComparisonList);
 
   if (teamComparisonList.length < 2) {
-    return (
-      <div className="bg-bg-surface border border-border rounded-xl p-6 text-center text-text-secondary text-sm">
-        Select 2-3 teams from standings to compare
-      </div>
-    );
+    return null;
   }
 
   if (isLoading) return (
@@ -32,7 +28,6 @@ export function TeamComparisonChart() {
 
   return (
     <section>
-        {teamComparisonList.length >= 2 ? <div> Comparison Count: {teamComparisonList.length} </div> : <></> }
       <div className="flex items-center justify-between mb-4">
         <h2 className="text-xl font-bold text-white border-l-2 border-neon-green pl-3">Team Comparison</h2>
         <button

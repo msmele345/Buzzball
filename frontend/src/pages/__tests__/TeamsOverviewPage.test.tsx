@@ -101,7 +101,7 @@ describe('TeamsOverviewPage', () => {
 
       renderPage();
 
-      expect(screen.getByText('Failed to load teams')).toBeInTheDocument();
+      expect(screen.getByText('Bobbled at short')).toBeInTheDocument();
     });
 
     it('should not display any team cards', () => {

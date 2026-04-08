@@ -13,6 +13,7 @@ export const fetchPlayer = async (id: string): Promise<PlayerDetailDto> => {
 
 export const fetchBattingStats = async (playerId: string): Promise<BattingStatsDto[]> => {
   const { data } = await apiClient.get<BattingStatsDto[]>(`/players/${playerId}/batting`);
+  console.log("Fetched batting stats:", data);
   return data;
 };
 

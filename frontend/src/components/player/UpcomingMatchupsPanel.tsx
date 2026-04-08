@@ -27,9 +27,9 @@ export function UpcomingMatchupsPanel({ playerId }: { playerId: string }) {
       </div>
     );
   } else if (error) {
-    content = <div className="text-text-muted text-sm">Projections unavailable</div>;
+    content = <div className="text-text-muted text-sm">The projections model struck out. Try again later.</div>;
   } else if (!matchups?.length) {
-    content = <div className="text-text-muted text-sm">No upcoming matchup projections</div>;
+    content = <div className="text-text-muted text-sm">Off day. No upcoming matchup projections available.</div>;
   } else {
     content = (
       <div className="space-y-3">

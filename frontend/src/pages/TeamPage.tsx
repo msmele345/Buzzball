@@ -1,6 +1,7 @@
 import { useParams, Link } from 'react-router-dom';
 import { useTeam, useTeamRoster } from '../hooks/useTeams';
 import type { RosterPlayerDto } from '../types';
+import { Breadcrumbs } from '../components/nav/Breadcrumbs';
 
 export function TeamPage() {
   const { id } = useParams<{ id: string }>();
@@ -13,11 +14,18 @@ export function TeamPage() {
       <div className="animate-pulse h-64 bg-bg-surface rounded-xl" />
     </div>
   );
-  if (error) return <div className="text-hot-red p-8">Team not found</div>;
+  if (error) return (
+    <div className="max-w-5xl mx-auto px-4 py-16 text-center">
+      <p className="text-4xl mb-3" aria-hidden>E-3</p>
+      <p className="text-white font-bold text-lg mb-1">Error at first</p>
+      <p className="text-text-secondary text-sm">That team slipped through our glove. Try heading back to the dugout.</p>
+    </div>
+  );
   if (!team) return null;
 
   return (
     <div className="max-w-5xl mx-auto px-4 py-8 space-y-8">
+      <Breadcrumbs crumbs={[{ label: 'Teams', to: '/teams' }, { label: team.name }]} />
       <div className="bg-bg-surface border border-border border-t-2 border-t-gold rounded-2xl p-6">
         <h1 className="text-3xl font-extrabold text-white">{team.name}</h1>
         <p className="text-text-secondary mt-1">{team.division} · {team.league}</p>
@@ -47,7 +55,7 @@ export function TeamPage() {
               <Link
                 key={player.playerId}
                 to={`/players/${player.playerId}`}
-                className="bg-bg-surface border border-border rounded-xl p-3 transition-all duration-200 hover:bg-bg-hover hover:border-neon-green/25 hover:scale-[1.02] hover:shadow-[0_0_15px_rgba(0,255,135,0.1)]"
+                className="bg-bg-surface border border-border rounded-xl p-3 transition-all duration-200 card-press hover:bg-bg-hover hover:border-neon-green/25"
               >
                 <p className="text-white text-sm font-medium">{player.name}</p>
                 <p className="text-text-secondary text-xs mt-1">{player.position}</p>
