@@ -131,15 +131,20 @@ public class DashboardService {
                 .sorted(Comparator.comparingDouble(BattingStats::getWoba).reversed())
                 .limit(3)
                 .forEach(stats -> {
-                    Player player = playerRepository.findById(stats.getPlayerId()).orElse(null);
-                    leaders.add(LeagueLeaderDto.builder()
-                            .category("wOBA")
-                            .playerId(stats.getPlayerId())
-                            .playerName(player != null ? player.getName() : stats.getPlayerId())
-                            .teamId(player != null ? player.getTeamId() : "")
-                            .value(stats.getWoba())
-                            .rank(leaders.size() + 1)
-                            .build());
+                    playerRepository.findById(stats.getPlayerId())
+                            .ifPresent(p -> {
+                                if (p.getTeamId() != null) {
+                                    LeagueLeaderDto leagueLeaderDto = LeagueLeaderDto.builder()
+                                            .category("wOBA")
+                                            .playerId(stats.getPlayerId())
+                                            .playerName(p.getName())
+                                            .teamId(p.getTeamId())
+                                            .value(stats.getWoba())
+                                            .rank(leaders.size() + 1)
+                                            .build();
+                                    leaders.add(leagueLeaderDto);
+                                }
+                            });
                 });
 
         // Top WAR (batting)

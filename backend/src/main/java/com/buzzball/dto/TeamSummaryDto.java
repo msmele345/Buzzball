@@ -1,6 +1,7 @@
 package com.buzzball.dto;
 
 import lombok.Builder;
+import lombok.NoArgsConstructor;
 import lombok.Value;
 
 @Value

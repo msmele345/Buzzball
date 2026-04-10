@@ -1,20 +1,21 @@
 package com.buzzball.dto;
 
-import lombok.Builder;
-import lombok.Value;
+import lombok.*;
 
-@Value
+@Data
 @Builder
+@AllArgsConstructor
+@NoArgsConstructor
 public class TrendingPlayerDto {
-    String playerId;
-    String name;
-    String position;
-    String teamId;
-    Double currentWar;
-    Double warDelta7d;
-    Double currentWoba;
-    Double wobaDelta7d;
-    Double currentFip;
-    Double fipDelta7d;
-    String trendCategory; // "hitting", "pitching", "fielding"
+    private String playerId;
+    private String name;
+    private String position;
+    private String teamId;
+    private Double currentWar;
+    private Double warDelta7d;
+    private Double currentWoba;
+    private Double wobaDelta7d;
+    private Double currentFip;
+    private Double fipDelta7d;
+    private String trendCategory; // "hitting", "pitching", "fielding"
 }

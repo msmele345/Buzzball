@@ -1,14 +1,14 @@
 package com.buzzball.service.ingestion;
 
-import com.azure.core.annotation.Patch;
-import com.azure.core.annotation.Post;
 import com.buzzball.model.*;
-import com.buzzball.repository.*;
+import com.buzzball.repository.BattingStatsRepository;
+import com.buzzball.repository.PitchingStatsRepository;
+import com.buzzball.repository.PlayerRepository;
+import com.buzzball.repository.TeamRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
-import javax.annotation.PostConstruct;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -127,7 +127,6 @@ public class DataIngestionOrchestrator {
 
     public void refreshStandings() {
         purgeStaleTeamDocuments();
-        //clean up TODO
 //        purgeStalePlayerDocuments();
         List<Team> teams = mlbStatsApiClient.fetchStandings();
         teams.stream()
@@ -216,6 +215,7 @@ public class DataIngestionOrchestrator {
         BattingStats stats = battingStatsRepository.findById(id)
                 .orElse(BattingStats.builder().id(id).playerId(playerId).season(season).build());
 
+        stats.setOps(parseDoubleSafe(String.valueOf(row.getOrDefault("OPS", ""))));
         stats.setWoba(parseDoubleSafe(String.valueOf(row.getOrDefault("wOBA", ""))));
         stats.setWrcPlus(parseDoubleSafe(String.valueOf(row.getOrDefault("wRC+", ""))));
         stats.setFWar(parseDoubleSafe(String.valueOf(row.getOrDefault("WAR", ""))));

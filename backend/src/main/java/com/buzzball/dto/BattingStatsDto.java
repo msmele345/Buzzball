@@ -1,9 +1,11 @@
 package com.buzzball.dto;
 
 import lombok.Builder;
+import lombok.Data;
 import lombok.Value;
+import lombok.With;
 
-@Value
+@Data
 @Builder
 public class BattingStatsDto {
     String playerId;

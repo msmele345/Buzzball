@@ -1,12 +1,15 @@
 package com.buzzball.service;
 
 import com.buzzball.dto.LeagueLeaderDto;
+import com.buzzball.dto.TeamSummaryDto;
 import com.buzzball.dto.TrendingPlayerDto;
 import com.buzzball.fixtures.BStatsTestProvider;
 import com.buzzball.fixtures.PStatsTestProvider;
 import com.buzzball.fixtures.PlayerFixtures;
+import com.buzzball.fixtures.TeamFixtures;
 import com.buzzball.mapper.PlayerMapper;
 import com.buzzball.mapper.TeamMapper;
+import com.buzzball.model.Team;
 import com.buzzball.repository.BattingStatsRepository;
 import com.buzzball.repository.PitchingStatsRepository;
 import com.buzzball.repository.PlayerRepository;
@@ -21,6 +24,8 @@ import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -96,5 +101,32 @@ class DashboardServiceTest {
 
         assertThat(actual.getFirst().getPlayerName()).isEqualTo("Aaron Judge");
         assertThat(actual.getFirst().getCategory()).isEqualTo("wOBA");
+    }
+
+    @Test
+    void getStandingsByLeague_returnsSortedListForGivenLeague() {
+        List<Team> teams = List.of(TeamFixtures.YANKEES, TeamFixtures.RED_SOX, TeamFixtures.DODGERS);
+        TeamSummaryDto expectedFirstPlaceTeam = TeamSummaryDto.builder()
+                .teamId("nyy")
+                .name("Yankees")
+                .abbreviation("NYY")
+                .division("AL East")
+                .league("AL")
+                .wins(95)
+                .losses(5)
+                .winPct(55.0)
+                .gamesBack(0.0)
+                .runDifferential(140)
+                .build();
+
+        when(teamRepository.findByLeague("AL")).thenReturn(teams);
+        when(teamMapper.toSummaryDto(any())).thenReturn(expectedFirstPlaceTeam,
+                TeamSummaryDto.builder().teamId("bos").name("Red Sox").league("AL").winPct(50.0).build(),
+                TeamSummaryDto.builder().teamId("lad").name("Dodgers").league("NL").winPct(60.0).build()
+        );
+
+        List<TeamSummaryDto> actual = dashboardService.getStandingsByLeague("AL");
+        assertThat(actual.size()).isEqualTo(3);
+        assertThat(actual.getFirst()).isEqualTo(expectedFirstPlaceTeam);
     }
 }
